@@ -1,0 +1,123 @@
+def FAILED_STAGE
+
+pipeline {
+    agent { label 'Staging_agent' }
+    environment {
+		DOCKERHUB_CREDENTIALS=credentials('Docker_Hub')
+	 }    
+    stages {
+        stage('Pipeline Launched!') {
+            steps { script {
+                FAILED_STAGE=env.STAGE_NAME
+                echo '''-------------------------------------------------------------------------------- 
+                    * Starting Kubernetes Project Pipeline! *           
+--------------------------------------------------------------------------------'''
+            //sh 'sudo rm -f /etc/docker/daemon.json'
+            //sh 'sudo touch /etc/docker/daemon.json'
+            //sh 'sudo chmod 777 /etc/docker/daemon.json'
+            //sh 'sudo echo -e "{\n   "insecure-registries" : [ "3.75.8.184:8082" ] \n}">>/etc/daemon.json'
+            sh 'sudo systemctl restart docker'
+            } }
+        }
+             
+        stage('Build Docker Image') {
+            steps { script {
+                FAILED_STAGE=env.STAGE_NAME
+                echo '''-------------------------------------------------------------------------------- 
+                      * Building Docker Image ... *           
+--------------------------------------------------------------------------------''' 
+                sh 'sudo docker rm -f weather_con'
+                sh 'sudo docker system prune -f'
+                sh 'sudo docker build -t 3.75.8.184:8082/do5/weather_app_img:latest .'
+                sh 'sudo docker build -t 310179635/weather_app_img .'
+                }
+            } }
+   			
+        
+        stage('Run Weather Application') {
+            steps { script {
+                FAILED_STAGE=env.STAGE_NAME
+                echo '''-------------------------------------------------------------------------------- 
+                      * Runnig Weather App with Docker... *           
+--------------------------------------------------------------------------------''' 
+                sh 'sudo docker run -d -p 80:5000 --name weather_con 3.75.8.184:8082/do5/weather_app_img:latest'
+                }
+            } }
+   			
+        
+        stage('Weather App Unittest') {
+            steps { script {
+                FAILED_STAGE=env.STAGE_NAME
+                echo '''-------------------------------------------------------------------------------- 
+                      * Testing UnitTest weather application... *           
+--------------------------------------------------------------------------------'''
+                sh 'python3 test_unit.py'
+            }}
+        }
+        stage('Upload to Artifactory & DockerHub') {
+            steps { script {
+                FAILED_STAGE=env.STAGE_NAME
+                echo '''-------------------------------------------------------------------------------- 
+                     * Uploading Artifacts to JFrog and DockerHub... *           
+--------------------------------------------------------------------------------'''
+                sh 'sudo chmod 666 /var/run/docker.sock'
+                //rtDockerPush(
+                //serverId: "jfrog_repo",
+                //image: "3.75.8.184:8082/do5/weather_app_img:latest",
+                //targetRepo: 'do5/', 
+                //)
+                
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                sh 'sudo docker push 310179635/weather_app_img'
+                
+                echo '''-------------------------------------------------------------------------------- 
+                             * Uploading Done :) ! *           
+--------------------------------------------------------------------------------'''
+                
+            } }
+        }
+        stage('Deploy to Kubernetes') {
+            steps { script {
+                FAILED_STAGE=env.STAGE_NAME
+                echo '''-------------------------------------------------------------------------------- 
+                     * Transfering to Kubernetes... *           
+--------------------------------------------------------------------------------'''
+                }
+                sshagent(credentials: ['k8s_ssh']) {
+                   sh '''
+                   scp deployment.yml ubuntu@ip-172-31-9-10.eu-central-1.compute.internal:~
+                   ssh ubuntu@ip-172-31-9-10.eu-central-1.compute.internal kubectl apply -f deployment.yml
+                   '''
+                } 
+                              
+                echo '''-------------------------------------------------------------------------------- 
+                             * Deploy is Done as far as i know... *           
+--------------------------------------------------------------------------------'''
+                
+            } }
+
+        stage('Pipeline Finished!') {
+            
+            steps { script {
+                FAILED_STAGE=env.STAGE_NAME
+                echo '''-------------------------------------------------------------------------------- 
+                      * Kubernetes Project Pipeline Ended! *             
+--------------------------------------------------------------------------------'''
+				
+            } }
+        }
+    }
+    post {
+        success {
+                mail to: "brozenman@gmail.com",
+                subject: "JENKINS PIPELINE: ${currentBuild.currentResult} - ${env.JOB_NAME}",
+                body: "JOB NAME: ${env.JOB_NAME}\nPIPELINE STATUS: ${currentBuild.currentResult}\nCOMMIT ID: ${GIT_COMMIT}\n ${env.BUILD_URL} "
+                }
+        failure {
+                mail to: "brozenman@gmail.com",
+                subject: "JENKINS PIPELINE: ${currentBuild.currentResult} - ${env.JOB_NAME}",
+                body: "JOB NAME: ${env.JOB_NAME}\nSTAGE FAILED NAME: $FAILED_STAGE \nPIPELINE STATUS: ${currentBuild.currentResult}\nCOMMIT ID: ${GIT_COMMIT}\n ${env.BUILD_URL} "
+                }       
+    }
+}
+
