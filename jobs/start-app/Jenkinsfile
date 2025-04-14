@@ -10,13 +10,10 @@ pipeline {
             steps { script {
                 FAILED_STAGE=env.STAGE_NAME
                 echo '''-------------------------------------------------------------------------------- 
-                    * Starting Kubernetes Project Pipeline! *           
+                    * Starting Stratus Project Pipeline! *           
 --------------------------------------------------------------------------------'''
-            //sh 'sudo rm -f /etc/docker/daemon.json'
-            //sh 'sudo touch /etc/docker/daemon.json'
-            //sh 'sudo chmod 777 /etc/docker/daemon.json'
-            //sh 'sudo echo -e "{\n   "insecure-registries" : [ "3.75.8.184:8082" ] \n}">>/etc/daemon.json'
-            sh 'sudo systemctl restart docker'
+            sh 'echo "Hello world" '
+            sh 'pwd'
             } }
         }
              
@@ -26,10 +23,10 @@ pipeline {
                 echo '''-------------------------------------------------------------------------------- 
                       * Building Docker Image ... *           
 --------------------------------------------------------------------------------''' 
-                sh 'sudo docker rm -f weather_con'
-                sh 'sudo docker system prune -f'
-                sh 'sudo docker build -t 3.75.8.184:8082/do5/weather_app_img:latest .'
-                sh 'sudo docker build -t 310179635/weather_app_img .'
+                // sh 'sudo docker rm -f weather_con'
+                // sh 'sudo docker system prune -f'
+                // sh 'sudo docker build -t 3.75.8.184:8082/do5/weather_app_img:latest .'
+                // sh 'sudo docker build -t 310179635/weather_app_img .'
                 }
             } }
    			
@@ -40,7 +37,7 @@ pipeline {
                 echo '''-------------------------------------------------------------------------------- 
                       * Runnig Weather App with Docker... *           
 --------------------------------------------------------------------------------''' 
-                sh 'sudo docker run -d -p 80:5000 --name weather_con 3.75.8.184:8082/do5/weather_app_img:latest'
+                // sh 'sudo docker run -d -p 80:5000 --name weather_con 3.75.8.184:8082/do5/weather_app_img:latest'
                 }
             } }
    			
@@ -51,24 +48,17 @@ pipeline {
                 echo '''-------------------------------------------------------------------------------- 
                       * Testing UnitTest weather application... *           
 --------------------------------------------------------------------------------'''
-                sh 'python3 test_unit.py'
+                // sh 'python3 test_unit.py'
             }}
         }
-        stage('Upload to Artifactory & DockerHub') {
+        stage('Upload to DockerHub') {
             steps { script {
                 FAILED_STAGE=env.STAGE_NAME
                 echo '''-------------------------------------------------------------------------------- 
-                     * Uploading Artifacts to JFrog and DockerHub... *           
---------------------------------------------------------------------------------'''
-                sh 'sudo chmod 666 /var/run/docker.sock'
-                //rtDockerPush(
-                //serverId: "jfrog_repo",
-                //image: "3.75.8.184:8082/do5/weather_app_img:latest",
-                //targetRepo: 'do5/', 
-                //)
-                
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                sh 'sudo docker push 310179635/weather_app_img'
+                     * Uploading Artifacts to DockerHub... *           
+--------------------------------------------------------------------------------'''             
+                // sh 'echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                // sh 'sudo docker push 310179635/weather_app_img'
                 
                 echo '''-------------------------------------------------------------------------------- 
                              * Uploading Done :) ! *           
@@ -76,25 +66,6 @@ pipeline {
                 
             } }
         }
-        stage('Deploy to Kubernetes') {
-            steps { script {
-                FAILED_STAGE=env.STAGE_NAME
-                echo '''-------------------------------------------------------------------------------- 
-                     * Transfering to Kubernetes... *           
---------------------------------------------------------------------------------'''
-                }
-                sshagent(credentials: ['k8s_ssh']) {
-                   sh '''
-                   scp deployment.yml ubuntu@ip-172-31-9-10.eu-central-1.compute.internal:~
-                   ssh ubuntu@ip-172-31-9-10.eu-central-1.compute.internal kubectl apply -f deployment.yml
-                   '''
-                } 
-                              
-                echo '''-------------------------------------------------------------------------------- 
-                             * Deploy is Done as far as i know... *           
---------------------------------------------------------------------------------'''
-                
-            } }
 
         stage('Pipeline Finished!') {
             
