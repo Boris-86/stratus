@@ -111,12 +111,12 @@ pipeline {
         success {
                 mail to: "brozenman@gmail.com",
                 subject: "JENKINS PIPELINE: ${currentBuild.currentResult} - ${env.JOB_NAME}",
-                body: "JOB NAME: ${env.JOB_NAME}\nPIPELINE STATUS: ${currentBuild.currentResult}\nCOMMIT ID: ${env.GIT_COMMIT}\n ${env.BUILD_URL} "
+                body: "JOB NAME: ${env.JOB_NAME}\nPIPELINE STATUS: ${currentBuild.currentResult}\nCOMMIT ID: ${GIT_COMMIT}\n ${env.BUILD_URL} "
                 }
         failure {
                 mail to: "brozenman@gmail.com",
                 subject: "JENKINS PIPELINE: ${currentBuild.currentResult} - ${env.JOB_NAME}",
-                body: "JOB NAME: ${env.JOB_NAME}\nSTAGE FAILED NAME: $FAILED_STAGE \nPIPELINE STATUS: ${currentBuild.currentResult}\nCOMMIT ID: ${env.GIT_COMMIT}\n ${env.BUILD_URL} "
+                body: "JOB NAME: ${env.JOB_NAME}\nSTAGE FAILED NAME: $FAILED_STAGE \nPIPELINE STATUS: ${currentBuild.currentResult}\nCOMMIT ID: ${GIT_COMMIT}\n ${env.BUILD_URL} "
                 }       
     }
 }
