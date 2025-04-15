@@ -1,23 +1,34 @@
+//===============================================================================
+// Boris Rozenman (c). 
+// 
+// Python Web Application Pipeline
+// Deploy on local environment simulating a whole CI/CD
+//
+// 
+//===============================================================================
 
 
 //===============================================================================
-//                                   Constants
+//                                   Variables
 //===============================================================================
 def FAILED_STAGE
-def APP_CONTAINER_NAME = "web_app_container"
-def APP_IMAGE_NAME = "web_application_img:latest"
-def HOST_PORT = "5000"
-def APP_PORT = "5000"
-def APP_FOLDER = "application"
-def HOST_ADDRESS = "localost"
+
 //===============================================================================
 //                                   PIPELINE
 //===============================================================================
 pipeline {
     agent { label 'docker-agent' }
-    //environment {
+    environment {
 		//DOCKERHUB_CREDENTIALS=credentials('Docker_Hub')
-	 //}    
+        APP_CONTAINER_NAME = "web_app_container"
+        APP_IMAGE_TAG = "web_application_img"
+        APP_IMAGE_VER = "latest"
+        HOST_PORT = "5000"
+        APP_PORT = "5000"
+        APP_FOLDER = "application"
+        HOST_ADDRESS = "localhost"
+	}
+    ////////////////////////////////////////////////////////////////////////////////    
     stages {          
         stage('Remove Old Web Application Docker Container...') {
             steps { 
@@ -72,14 +83,21 @@ pipeline {
             } 
         }
    	////////////////////////////////////////////////////////////////////////////////		
-        
         stage('Weather App Unittest') {
-            steps { script {
-                FAILED_STAGE=env.STAGE_NAME
-                echo "Stage: ${STAGE_NAME}"
-                // sh 'python3 test_unit.py'
-            }}
+            steps { 
+                script {
+                    FAILED_STAGE=env.STAGE_NAME
+                    echo "Stage: ${STAGE_NAME}"
+                    sh '''
+                        pwd
+                        cd application
+                        ls -la
+                        python3 smoke_test.py
+                    '''
+                }
+            }
         }
+    ////////////////////////////////////////////////////////////////////////////////
         stage('Upload to DockerHub') {
             steps { script {
                 FAILED_STAGE=env.STAGE_NAME
