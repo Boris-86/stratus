@@ -16,9 +16,16 @@ pipeline {
 --------------------------------------------------------------------------------'''
                     echo "Stage: ${STAGE_NAME}"
                     sh '''
-                        docker ps
-                        docker rm -f web_app_container'
-                        docker system prune -f'
+                        echo "[INFO] Existing containers:"
+                        docker ps -a
+
+                        echo "[INFO] Removing old web_app_container if exists..."
+                        docker ps -a --format '{{.Names}}' | grep -w web_app_container && docker rm -f web_app_container || echo "Container not found."
+
+                        echo "[INFO] Cleaning up unused resources..."
+                        docker system prune -f || true
+
+                        echo "[INFO] Remaining containers:"
                         docker ps
                     '''
                 } 
