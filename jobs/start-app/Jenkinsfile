@@ -16,10 +16,10 @@ def FAILED_STAGE
 pipeline {
     agent { label 'docker-agent' }
     environment {
-        // DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')
+        DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')
         APP_CONTAINER_NAME = "web_app_container"
         APP_IMAGE_TAG = "web_application_img"
-        APP_IMAGE_VER = "latest"
+        APP_IMAGE_VER = "${BUILD_NUMBER}"
         HOST_PORT = "5000"
         APP_PORT = "5000"
         APP_FOLDER = "application"
@@ -84,7 +84,7 @@ pipeline {
             }
         }
         ////////////////////////////////////////////////////////////////////////////////
-        stage('Weather App Unittest') {
+        stage('Test Web Application') {
             steps {
                 script {
                     FAILED_STAGE = env.STAGE_NAME
@@ -105,11 +105,12 @@ pipeline {
                 script {
                     FAILED_STAGE = env.STAGE_NAME
                     echo "Stage: ${STAGE_NAME}"
-                    // sh 'echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                    // sh 'sudo docker push 310179635/weather_app_img'
-                    echo '''-------------------------------------------------------------------------------- 
-                             * Uploading Done :) ! *           
---------------------------------------------------------------------------------'''
+                    sh '''
+                        echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+                        docker tag ${APP_IMAGE_TAG}:${APP_IMAGE_VER} $DOCKERHUB_CREDENTIALS_USR/${APP_IMAGE_TAG}:${APP_IMAGE_VER}
+                        docker push $DOCKERHUB_CREDENTIALS_USR/${APP_IMAGE_TAG}:${APP_IMAGE_VER}
+                    '''
+                    echo "Uploading Done!"
                 }
             }
         }
