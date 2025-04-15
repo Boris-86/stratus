@@ -1,3 +1,4 @@
+
 def FAILED_STAGE
 
 pipeline {
@@ -5,39 +6,49 @@ pipeline {
     //environment {
 		//DOCKERHUB_CREDENTIALS=credentials('Docker_Hub')
 	 //}    
-    stages {
-        stage('Pipeline Launched!') {
-            steps { script {
+    stages {          
+        stage('Remove Old Web Application Docker Container...') {
+            steps { 
+                script {
                 FAILED_STAGE=env.STAGE_NAME
                 echo '''-------------------------------------------------------------------------------- 
-                    * Starting Stratus Project Pipeline! *           
+                      *** Stratus Project Pipeline ***   
 --------------------------------------------------------------------------------'''
-                sh 'pwd'
-                sh 'cd application'
-                sh 'ls -la'
-
-            } }
-        }
-             
-        stage('Build Docker Image') {
-            steps { script {
-                FAILED_STAGE=env.STAGE_NAME
                 echo '''-------------------------------------------------------------------------------- 
-                      * Building Docker Image ... *           
+                      * echo ${STAGE_NAME} *  
 --------------------------------------------------------------------------------''' 
-                // sh 'sudo docker rm -f weather_con'
-                // sh 'sudo docker system prune -f'
-                // sh 'sudo docker build -t 3.75.8.184:8082/do5/weather_app_img:latest .'
-                // sh 'sudo docker build -t 310179635/weather_app_img .'
-                }
-            } }
-   			
-        
-        stage('Run Weather Application') {
+                sh '''
+                    docker ps
+                    docker rm -f web_app_container'
+                    docker system prune -f'
+                    docker ps
+                '''
+                } 
+            }
+        }
+    ////////////////////////////////////////////////////////////////////////////////    
+    stages {          
+        stage('Build New Web Application Docker Image') {
             steps { script {
                 FAILED_STAGE=env.STAGE_NAME
                 echo '''-------------------------------------------------------------------------------- 
-                      * Runnig Weather App with Docker... *           
+                        * echo ${STAGE_NAME} *           
+--------------------------------------------------------------------------------''' 
+                sh '''
+                    pwd
+                    cd application
+                    ls -la
+                    docker build . -t web_application
+                    docker images  
+                    '''
+                }
+            } } 			
+        
+        stage('Run Web Application') {
+            steps { script {
+                FAILED_STAGE=env.STAGE_NAME
+                echo '''-------------------------------------------------------------------------------- 
+                      * echo ${STAGE_NAME} *           
 --------------------------------------------------------------------------------''' 
                 // sh 'sudo docker run -d -p 80:5000 --name weather_con 3.75.8.184:8082/do5/weather_app_img:latest'
                 }
