@@ -6,8 +6,8 @@ port = "5000"
 SUCCESS = 200
 
 class TestWebApplication(unittest.TestCase):
-
 	def testApp(self):
+		http_code = None
 		url = f"http://{address}:{port}/"
 		try:
 			response = requests.get(url)
