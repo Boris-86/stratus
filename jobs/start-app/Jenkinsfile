@@ -30,8 +30,8 @@ pipeline {
                     sh '''
                         echo "[INFO] Existing containers:"
                         docker ps -a
-                        echo "[INFO] Removing old ${CONTAINER_NAME} if exists..."
-                        docker ps -a --format '{{.Names}}' | grep -w ${CONTAINER_NAME} && docker rm -f ${CONTAINER_NAME} || echo "Container not found."
+                        echo "[INFO] Removing old ${APP_CONTAINER_NAME} if exists..."
+                        docker ps -a --format '{{.Names}}' | grep -w ${APP_CONTAINER_NAME} && docker rm -f ${APP_CONTAINER_NAME} || echo "Container not found."
                         echo "[INFO] Cleaning up unused resources..."
                         docker system prune -f || true
                         echo "[INFO] Remaining containers:"
