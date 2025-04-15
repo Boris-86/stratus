@@ -13,11 +13,9 @@ class TestWebApplication(unittest.TestCase):
 			response = requests.get(url)
 			http_code = response.status_code
 			print("Remote Test: Web Site is O.K!")
-		except Exception as e:
-            http_code = None
-			print("Remote Test: Web Site ite is NOT reachable!", e)
-		
-		self.assertTrue(http_code == SUCCESS)
+		except Exception:
+			print("Remote Test: Web Site ite is NOT reachable!")
+		return self.assertEqual(http_code, SUCCESS)
 
 if __name__ == '__main__':
     unittest.main()
