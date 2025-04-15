@@ -11,11 +11,11 @@ pipeline {
             steps { 
                 script {
                     FAILED_STAGE=env.STAGE_NAME
-                    echo "--------------------------------"
-                    echo "*** Stratus Project Pipeline ***" 
-                    echo "--------------------------------"
+                    echo '''-------------------------------------------------------------------------------- 
+                      * Stratus Project Pipeline Start! *             
+--------------------------------------------------------------------------------'''
                     echo "Stage: ${STAGE_NAME}"
-                     sh '''
+                    sh '''
                         docker ps
                         docker rm -f web_app_container'
                         docker system prune -f'
@@ -34,21 +34,23 @@ pipeline {
                         pwd
                         cd application
                         ls -la
-                        docker build . -t web_application
+                        docker build . -t web_application_img:latest
                         docker images  
                         '''
                 }
             } 
         } 			
-        
-        stage('Run Web Application') {
-            steps { script {
-                FAILED_STAGE=env.STAGE_NAME
-                echo "Stage: ${STAGE_NAME}"
-                // sh 'sudo docker run -d -p 80:5000 --name weather_con 3.75.8.184:8082/do5/weather_app_img:latest'
+    ////////////////////////////////////////////////////////////////////////////////       
+        stage('Deploy Web Application') {
+            steps { 
+                script {
+                    FAILED_STAGE=env.STAGE_NAME
+                    echo "Stage: ${STAGE_NAME}"
+                    sh 'docker run -d -p 5000:5000 --name web_app_container web_application_img:latest'
                 }
-            } }
-   			
+            } 
+        }
+   	////////////////////////////////////////////////////////////////////////////////		
         
         stage('Weather App Unittest') {
             steps { script {
