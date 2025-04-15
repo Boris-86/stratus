@@ -10,39 +10,40 @@ pipeline {
         stage('Remove Old Web Application Docker Container...') {
             steps { 
                 script {
-                FAILED_STAGE=env.STAGE_NAME
-                echo '''-------------------------------------------------------------------------------- 
-                      *** Stratus Project Pipeline ***   
---------------------------------------------------------------------------------'''
-                echo '''-------------------------------------------------------------------------------- 
-                      * echo ${STAGE_NAME} *  
---------------------------------------------------------------------------------''' 
-                sh '''
-                    docker ps
-                    docker rm -f web_app_container'
-                    docker system prune -f'
-                    docker ps
-                '''
+                    FAILED_STAGE=env.STAGE_NAME
+                    echo '''-------------------------------------------------------------------------------- 
+                        *** Stratus Project Pipeline ***   
+    --------------------------------------------------------------------------------'''
+                    echo '''-------------------------------------------------------------------------------- 
+                        * echo ${STAGE_NAME} *  
+    --------------------------------------------------------------------------------''' 
+                    sh '''
+                        docker ps
+                        docker rm -f web_app_container'
+                        docker system prune -f'
+                        docker ps
+                    '''
                 } 
             }
         }
-    ////////////////////////////////////////////////////////////////////////////////    
-    stages {          
+    ////////////////////////////////////////////////////////////////////////////////          
         stage('Build New Web Application Docker Image') {
-            steps { script {
-                FAILED_STAGE=env.STAGE_NAME
-                echo '''-------------------------------------------------------------------------------- 
-                        * echo ${STAGE_NAME} *           
---------------------------------------------------------------------------------''' 
-                sh '''
-                    pwd
-                    cd application
-                    ls -la
-                    docker build . -t web_application
-                    docker images  
-                    '''
+            steps { 
+                script {
+                    FAILED_STAGE=env.STAGE_NAME
+                    echo '''-------------------------------------------------------------------------------- 
+                            * echo ${STAGE_NAME} *           
+    --------------------------------------------------------------------------------''' 
+                    sh '''
+                        pwd
+                        cd application
+                        ls -la
+                        docker build . -t web_application
+                        docker images  
+                        '''
                 }
-            } } 			
+            } 
+        } 			
         
         stage('Run Web Application') {
             steps { script {
