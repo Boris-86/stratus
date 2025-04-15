@@ -1,21 +1,26 @@
 import unittest
 import requests
 
-address = "localhost"
+address = "0.0.0.0"
 port = "5000"
 SUCCESS = 200
 
 class TestWebApplication(unittest.TestCase):
-	def testApp(self):
-		http_code = None
-		url = f"{address}:{port}/"
-		try:
-			response = requests.get(url)
-			http_code = response.status_code
-			print("Remote Test: Web Site is O.K!")
-		except Exception:
-			print("Remote Test: Web Site ite is NOT reachable!")
-		return self.assertEqual(http_code, SUCCESS)
+    def testApp(self):
+        url = f"http://{address}:{port}"
+        http_code = None  # Use None to clearly distinguish from 0
+
+        try:
+            response = requests.get(url)
+            http_code = response.status_code
+            print(f"Smoke Test: Web application at {url} is reachable [O.K].")
+            print(f"[INFO] HTTP status code: {http_code}")
+        except Exception as e:
+            print(f"[X] Smoke Test: Web application at {url} is NOT reachable! [X]")
+            print(f"[INFO] Exception: {e}")
+            print(f"[INFO] HTTP status code: {http_code}")
+
+        self.assertEqual(http_code, SUCCESS)
 
 if __name__ == '__main__':
     unittest.main()
