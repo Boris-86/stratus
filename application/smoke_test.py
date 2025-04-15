@@ -8,7 +8,7 @@ SUCCESS = 200
 class TestWebApplication(unittest.TestCase):
 	def testApp(self):
 		http_code = None
-		url = f"http://{address}:{port}/"
+		url = f"{address}:{port}/"
 		try:
 			response = requests.get(url)
 			http_code = response.status_code
