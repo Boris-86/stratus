@@ -92,7 +92,7 @@ pipeline {
                         pwd
                         cd application
                         ls -la
-                        source /opt/venv/bin/activate
+                        . /opt/venv/bin/activate
                         python3 smoke_test.py
                     '''
                 }
