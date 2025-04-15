@@ -78,7 +78,7 @@ pipeline {
                           --network ${DOCKER_NETWORK} \
                           -p ${HOST_PORT}:${APP_PORT} \
                           --name ${APP_CONTAINER_NAME} \
-                          ${APP_IMAGE_TAG}:${APP_IMAGE_VER}
+                          ${REPO}/${APP_IMAGE_TAG}:${APP_IMAGE_VER}
                         docker ps
                     '''
                 }
