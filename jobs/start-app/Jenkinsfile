@@ -24,6 +24,7 @@ pipeline {
         APP_PORT = "5000"
         APP_FOLDER = "application"
         DOCKER_NETWORK = "jenkins-net"
+        REPO = "stratus"
     }
     ////////////////////////////////////////////////////////////////////////////////
     stages {
@@ -59,7 +60,7 @@ pipeline {
                         cd ${APP_FOLDER}
                         ls -la
                         docker images
-                        docker build . -t ${APP_IMAGE_TAG}:${APP_IMAGE_VER}
+                        docker build . -t ${REPO}/${APP_IMAGE_TAG}:${APP_IMAGE_VER}
                         docker images
                     '''
                 }
@@ -107,8 +108,8 @@ pipeline {
                     echo "Stage: ${STAGE_NAME}"
                     sh '''
                         echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-                        docker tag ${APP_IMAGE_TAG}:${APP_IMAGE_VER} $DOCKERHUB_CREDENTIALS_USR/${APP_IMAGE_TAG}:${APP_IMAGE_VER}
-                        docker push $DOCKERHUB_CREDENTIALS_USR/${APP_IMAGE_TAG}:${APP_IMAGE_VER}
+                        docker tag ${REPO}/${APP_IMAGE_TAG}:${APP_IMAGE_VER} $DOCKERHUB_CREDENTIALS_USR/${REPO}/${APP_IMAGE_TAG}:${APP_IMAGE_VER}
+                        docker push $DOCKERHUB_CREDENTIALS_USR/${REPO}/${APP_IMAGE_TAG}:${APP_IMAGE_VER}
                     '''
                     echo "Uploading Done!"
                 }
