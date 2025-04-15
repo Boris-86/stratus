@@ -11,8 +11,10 @@ pipeline {
             steps { 
                 script {
                     FAILED_STAGE=env.STAGE_NAME
+                    echo "--------------------------------"
                     echo "*** Stratus Project Pipeline ***" 
-                    echo "echo ${STAGE_NAME}"
+                    echo "--------------------------------"
+                    echo "Stage: ${STAGE_NAME}"
                      sh '''
                         docker ps
                         docker rm -f web_app_container'
@@ -27,7 +29,7 @@ pipeline {
             steps { 
                 script {
                     FAILED_STAGE=env.STAGE_NAME
-                    echo "echo ${STAGE_NAME}"
+                    echo "Stage: ${STAGE_NAME}"
                     sh '''
                         pwd
                         cd application
@@ -42,7 +44,7 @@ pipeline {
         stage('Run Web Application') {
             steps { script {
                 FAILED_STAGE=env.STAGE_NAME
-                echo "echo ${STAGE_NAME}" 
+                echo "Stage: ${STAGE_NAME}"
                 // sh 'sudo docker run -d -p 80:5000 --name weather_con 3.75.8.184:8082/do5/weather_app_img:latest'
                 }
             } }
@@ -51,14 +53,14 @@ pipeline {
         stage('Weather App Unittest') {
             steps { script {
                 FAILED_STAGE=env.STAGE_NAME
-                echo "echo ${STAGE_NAME}"
+                echo "Stage: ${STAGE_NAME}"
                 // sh 'python3 test_unit.py'
             }}
         }
         stage('Upload to DockerHub') {
             steps { script {
                 FAILED_STAGE=env.STAGE_NAME
-                echo "echo ${STAGE_NAME}"             
+                echo "Stage: ${STAGE_NAME}"            
                 // sh 'echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
                 // sh 'sudo docker push 310179635/weather_app_img'
                 
