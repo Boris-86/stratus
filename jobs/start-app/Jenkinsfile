@@ -1,6 +1,18 @@
 
-def FAILED_STAGE
 
+//===============================================================================
+//                                   Constants
+//===============================================================================
+def FAILED_STAGE
+def APP_CONTAINER_NAME = "web_app_container"
+def APP_IMAGE_NAME = "web_application_img:latest"
+def HOST_PORT = "5000"
+def APP_PORT = "5000"
+def APP_FOLDER = "application"
+def HOST_ADDRESS = "localost"
+//===============================================================================
+//                                   PIPELINE
+//===============================================================================
 pipeline {
     agent { label 'docker-agent' }
     //environment {
@@ -18,13 +30,10 @@ pipeline {
                     sh '''
                         echo "[INFO] Existing containers:"
                         docker ps -a
-
-                        echo "[INFO] Removing old web_app_container if exists..."
-                        docker ps -a --format '{{.Names}}' | grep -w web_app_container && docker rm -f web_app_container || echo "Container not found."
-
+                        echo "[INFO] Removing old ${CONTAINER_NAME} if exists..."
+                        docker ps -a --format '{{.Names}}' | grep -w ${CONTAINER_NAME} && docker rm -f ${CONTAINER_NAME} || echo "Container not found."
                         echo "[INFO] Cleaning up unused resources..."
                         docker system prune -f || true
-
                         echo "[INFO] Remaining containers:"
                         docker ps
                     '''
