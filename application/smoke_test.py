@@ -1,7 +1,7 @@
 import unittest
 import requests
 
-address = "0.0.0.0"
+address = "localhost"
 port = "5000"
 SUCCESS = 200
 
