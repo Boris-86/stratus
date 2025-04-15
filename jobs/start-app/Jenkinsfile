@@ -12,8 +12,10 @@ pipeline {
                 echo '''-------------------------------------------------------------------------------- 
                     * Starting Stratus Project Pipeline! *           
 --------------------------------------------------------------------------------'''
-            sh 'echo "Hello world" '
-            sh 'pwd'
+                sh 'pwd'
+                sh 'cd application'
+                sh 'ls -la'
+
             } }
         }
              
@@ -72,7 +74,7 @@ pipeline {
             steps { script {
                 FAILED_STAGE=env.STAGE_NAME
                 echo '''-------------------------------------------------------------------------------- 
-                      * Kubernetes Project Pipeline Ended! *             
+                      * Stratus Project Pipeline Ended! *             
 --------------------------------------------------------------------------------'''
 				
             } }
