@@ -32,7 +32,7 @@ class TestWebApplication(unittest.TestCase):
         address = config.get("address")
         port = config.get("port")      
         
-        url = f"http://{adress}:{port}"
+        url = f"http://{address}:{port}"
         http_code = None  
         try:
             response = requests.get(url)
