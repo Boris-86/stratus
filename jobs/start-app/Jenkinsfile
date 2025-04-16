@@ -9,7 +9,7 @@
 //                                   Variables
 //===============================================================================
 def FAILED_STAGE
-def PORT_PATTERN = /^[0-9]+$/
+
 //===============================================================================
 //                                   PIPELINE
 //===============================================================================
@@ -45,8 +45,7 @@ pipeline {
                         error "[ERROR] SMOKE_TEST_PORT is empty. Please provide a port."
                     }
                     try {
-                        params.SMOKE_TEST_PORT.parseInt(value)
-                        return FormValidation.ok()
+                        Integer.parseInt(params.SMOKE_TEST_PORT)
                     } catch (e) {
                         error "[ERROR] Port ${params.SMOKE_TEST_PORT} is Invalid. Please provide a valid port."
                     }
