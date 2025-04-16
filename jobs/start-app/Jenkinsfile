@@ -9,7 +9,12 @@
 //                                   Variables
 //===============================================================================
 def FAILED_STAGE
-
+def SUBJECT = "Jenkins Pipeline"
+def DEFAULT_EMAIL = "brozenman@gmail.com"
+def EMAIL_BODY = "Job Name"
+def PSTATUS_TAG = "Pipeline Status"
+def COMMIT_ID_TAG = "Commit ID"
+def FSTAGE_NAME = "Failed in Stage"
 //===============================================================================
 //                                   PIPELINE
 //===============================================================================
@@ -159,14 +164,14 @@ pipeline {
     }
     post {
         success {
-            mail to: "brozenman@gmail.com",
-                 subject: "JENKINS PIPELINE: ${currentBuild.currentResult} - ${env.JOB_NAME}",
-                 body: "JOB NAME: ${env.JOB_NAME}\nPIPELINE STATUS: ${currentBuild.currentResult}\nCOMMIT ID: ${env.GIT_COMMIT}\n ${env.BUILD_URL} "
+            mail to: "${DEFAULT_EMAIL}",
+                 subject: "${SUBJECT}: ${currentBuild.currentResult} - ${env.JOB_NAME}",
+                 body: "${EMAIL_BODY}: ${env.JOB_NAME}\n${PSTATUS_TAG}: ${currentBuild.currentResult}\n${COMMIT_ID_TAG}: ${env.GIT_COMMIT}\n ${env.BUILD_URL} "
         }
         failure {
-            mail to: "brozenman@gmail.com",
-                 subject: "JENKINS PIPELINE: ${currentBuild.currentResult} - ${env.JOB_NAME}",
-                 body: "JOB NAME: ${env.JOB_NAME}\nSTAGE FAILED NAME: $FAILED_STAGE \nPIPELINE STATUS: ${currentBuild.currentResult}\nCOMMIT ID: ${env.GIT_COMMIT}\n ${env.BUILD_URL} "
+            mail to: "${DEFAULT_EMAIL}",
+                 subject: "${SUBJECT}: ${currentBuild.currentResult} - ${env.JOB_NAME}",
+                 body: "${EMAIL_BODY}: ${env.JOB_NAME}\n${FSTAGE_NAME}: $FAILED_STAGE \n${PSTATUS_TAG}: ${currentBuild.currentResult}\n${COMMIT_ID_TAG}: ${env.GIT_COMMIT}\n ${env.BUILD_URL} "
         }
     }
 }
