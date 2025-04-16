@@ -33,6 +33,22 @@ pipeline {
     }
     ////////////////////////////////////////////////////////////////////////////////
     stages {
+        stage('Validate Parameters') {
+            steps {
+                script {
+                    FAILED_STAGE = env.STAGE_NAME
+                    echo "Stage: ${STAGE_NAME}"
+                    if (params.SMOKE_TEST_ADDRESS.isEmpty()) {
+                        error "[ERROR] SMOKE_TEST_ADDRESS is empty. Please provide a valid address."
+                    }
+                    if (params.SMOKE_TEST_PORT.isEmpty()) {
+                        error "[ERROR] SMOKE_TEST_PORT is empty. Please provide a valid port."
+                    }
+                    echo "[INFO] Parameters validated successfully."
+                }
+            }
+        }
+        
         stage('Remove Old Web Application Docker Container...') {
             steps {
                 script {
