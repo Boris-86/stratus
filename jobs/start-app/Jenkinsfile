@@ -96,7 +96,7 @@ pipeline {
                         cd ${APP_FOLDER}
                         ls -la
                         . /opt/venv/bin/activate
-                        python3 smoke_test.py
+                        python3 smoke_test.py -ad ${params.SMOKE_TEST_ADDRESS}
                     '''
                 }
             }
