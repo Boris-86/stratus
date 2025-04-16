@@ -24,7 +24,7 @@ pipeline {
         APP_CONTAINER_NAME = "web_app_container"
         APP_IMAGE_TAG = "web_application_img"
         APP_IMAGE_VER = "${BUILD_NUMBER}"
-        HOST_PORT = params.SMOKE_TEST_PORT
+        HOST_PORT = "${params.SMOKE_TEST_PORT}"
         APP_PORT = "5000"
         APP_FOLDER = "application"
         DOCKER_NETWORK = "jenkins-net"
