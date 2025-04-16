@@ -97,13 +97,14 @@ pipeline {
                     echo "Stage: ${STAGE_NAME}"
                     writeFile file: "${APP_FOLDER}/test_config.json", text: """{
                         "address": "${params.SMOKE_TEST_ADDRESS}",
-                        "port": "${params.APP_PORT}"
+                        "port": "${params.SMOKE_TEST_PORT}"
                         }"""
                     sh '''
                         pwd
                         cd ${APP_FOLDER}
                         ls -la
                         . /opt/venv/bin/activate
+                        cat test_config.json
                         python3 smoke_test.py
                     '''
                 }
