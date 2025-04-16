@@ -1,123 +1,176 @@
-def FAILED_STAGE
+//===============================================================================
+// Boris Rozenman (c). 
+// 
+// Python Web Application Pipeline
+// Deploy on local environment simulating a whole CI/CD
+//===============================================================================
 
+//===============================================================================
+//                                   Variables
+//===============================================================================
+def FAILED_STAGE
+def SUBJECT = "Jenkins Pipeline"
+def DEFAULT_EMAIL = "brozenman@gmail.com"
+def EMAIL_BODY = "Job Name"
+def PSTATUS_TAG = "Pipeline Status"
+def COMMIT_ID_TAG = "Commit ID"
+def FSTAGE_NAME = "Failed in Stage"
+//===============================================================================
+//                                   PIPELINE
+//===============================================================================
 pipeline {
     agent { label 'docker-agent' }
+    parameters {
+        string(name: 'APPLICATION_NAME', defaultValue: 'web', description: 'Web Application name: ')
+        string(name: 'SMOKE_TEST_PORT', defaultValue: '5000', description: 'Target port for smoke test, e.g. 8080, 5000 etc.')
+    }
     environment {
-		DOCKERHUB_CREDENTIALS=credentials('Docker_Hub')
-	 }    
+        DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')
+        APP_CONTAINER_NAME = "${params.APPLICATION_NAME}_app_container"
+        APP_IMAGE_TAG = "${params.APPLICATION_NAME}_app_img"
+        APP_IMAGE_VER = "${BUILD_NUMBER}"
+        SMOKE_TEST_ADDRESS = "${APP_CONTAINER_NAME}"
+        HOST_PORT = "${params.SMOKE_TEST_PORT}"
+        DOCKER_PORT = "5000"
+        APP_FOLDER = "application"
+        DOCKER_NETWORK = "jenkins-net"
+        DOCKERHUB_USER = "310179635"
+        DOCKERHUB_REPO = "stratus"
+    }
+    ////////////////////////////////////////////////////////////////////////////////
     stages {
-        stage('Pipeline Launched!') {
-            steps { script {
-                FAILED_STAGE=env.STAGE_NAME
-                echo '''-------------------------------------------------------------------------------- 
-                    * Starting Kubernetes Project Pipeline! *           
---------------------------------------------------------------------------------'''
-            //sh 'sudo rm -f /etc/docker/daemon.json'
-            //sh 'sudo touch /etc/docker/daemon.json'
-            //sh 'sudo chmod 777 /etc/docker/daemon.json'
-            //sh 'sudo echo -e "{\n   "insecure-registries" : [ "3.75.8.184:8082" ] \n}">>/etc/daemon.json'
-            sh 'sudo systemctl restart docker'
-            } }
-        }
-             
-        stage('Build Docker Image') {
-            steps { script {
-                FAILED_STAGE=env.STAGE_NAME
-                echo '''-------------------------------------------------------------------------------- 
-                      * Building Docker Image ... *           
---------------------------------------------------------------------------------''' 
-                sh 'sudo docker rm -f weather_con'
-                sh 'sudo docker system prune -f'
-                sh 'sudo docker build -t 3.75.8.184:8082/do5/weather_app_img:latest .'
-                sh 'sudo docker build -t 310179635/weather_app_img .'
+        stage('Validate Parameters') {
+            steps {
+                script {
+                    FAILED_STAGE = env.STAGE_NAME
+                    echo "Stage: ${STAGE_NAME}"
+                    if (params.APPLICATION_NAME.isEmpty()) {
+                        error "[ERROR] APPLICATION_NAME is empty. Please provide a name."
+                    }
+                    if (params.SMOKE_TEST_PORT.isEmpty()) {
+                        error "[ERROR] SMOKE_TEST_PORT is empty. Please provide a port."
+                    }
+                    try {
+                        Integer.parseInt(params.SMOKE_TEST_PORT)
+                    } catch (e) {
+                        error "[ERROR] Port ${params.SMOKE_TEST_PORT} is Invalid. Please provide a valid port."
+                    }
+                    echo "[INFO] Parameters validated successfully."
+                    echo "${params.APPLICATION_NAME}"
+                    echo "${params.SMOKE_TEST_PORT}"
+                    echo "${APP_CONTAINER_NAME}"
+                    echo "${APP_IMAGE_TAG}"
+                    echo "${SMOKE_TEST_ADDRESS}"
                 }
-            } }
-   			
+            }
+        }
         
-        stage('Run Weather Application') {
-            steps { script {
-                FAILED_STAGE=env.STAGE_NAME
-                echo '''-------------------------------------------------------------------------------- 
-                      * Runnig Weather App with Docker... *           
---------------------------------------------------------------------------------''' 
-                sh 'sudo docker run -d -p 80:5000 --name weather_con 3.75.8.184:8082/do5/weather_app_img:latest'
+        stage('Remove Old Application Docker Container') {
+            steps {
+                script {
+                    FAILED_STAGE = env.STAGE_NAME
+                    echo '''-------------------------------------------------------------------------------- 
+                      * Stratus Project Pipeline Start! *             
+--------------------------------------------------------------------------------'''
+                    echo "Stage: ${STAGE_NAME}"
+                    sh '''
+                        echo "[INFO] Existing containers:"
+                        docker ps -a
+                        echo "[INFO] Removing old ${APP_CONTAINER_NAME} if exists..."
+                        docker ps -a --format '{{.Names}}' | grep -w ${APP_CONTAINER_NAME} && docker rm -f ${APP_CONTAINER_NAME} || echo "Container not found."
+                        echo "[INFO] Cleaning up unused resources..."
+                        docker system prune -f || true
+                        echo "[INFO] Remaining containers:"
+                        docker ps
+                    '''
                 }
-            } }
-   			
-        
-        stage('Weather App Unittest') {
-            steps { script {
-                FAILED_STAGE=env.STAGE_NAME
-                echo '''-------------------------------------------------------------------------------- 
-                      * Testing UnitTest weather application... *           
---------------------------------------------------------------------------------'''
-                sh 'python3 test_unit.py'
-            }}
+            }
         }
-        stage('Upload to Artifactory & DockerHub') {
-            steps { script {
-                FAILED_STAGE=env.STAGE_NAME
-                echo '''-------------------------------------------------------------------------------- 
-                     * Uploading Artifacts to JFrog and DockerHub... *           
---------------------------------------------------------------------------------'''
-                sh 'sudo chmod 666 /var/run/docker.sock'
-                //rtDockerPush(
-                //serverId: "jfrog_repo",
-                //image: "3.75.8.184:8082/do5/weather_app_img:latest",
-                //targetRepo: 'do5/', 
-                //)
-                
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                sh 'sudo docker push 310179635/weather_app_img'
-                
-                echo '''-------------------------------------------------------------------------------- 
-                             * Uploading Done :) ! *           
---------------------------------------------------------------------------------'''
-                
-            } }
+        ////////////////////////////////////////////////////////////////////////////////
+        stage('Build New Application Docker Image') {
+            steps {
+                script {
+                    FAILED_STAGE = env.STAGE_NAME
+                    echo "Stage: ${STAGE_NAME}"
+                    sh '''
+                        pwd
+                        cd ${APP_FOLDER}
+                        ls -la
+                        docker images
+                        docker build . -t ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${APP_IMAGE_TAG}-${APP_IMAGE_VER}
+                        docker images
+                    '''
+                }
+            }
         }
-        stage('Deploy to Kubernetes') {
-            steps { script {
-                FAILED_STAGE=env.STAGE_NAME
-                echo '''-------------------------------------------------------------------------------- 
-                     * Transfering to Kubernetes... *           
+        ////////////////////////////////////////////////////////////////////////////////
+        stage('Deploy Application') {
+            steps {
+                script {
+                    FAILED_STAGE = env.STAGE_NAME
+                    echo "Stage: ${STAGE_NAME}"
+                    sh '''
+                        docker ps
+                        docker run -d \
+                          --network ${DOCKER_NETWORK} \
+                          -p ${HOST_PORT}:${DOCKER_PORT} \
+                          --name ${APP_CONTAINER_NAME} \
+                          ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${APP_IMAGE_TAG}-${APP_IMAGE_VER}
+                        docker ps
+                    '''
+                }
+            }
+        }
+        ////////////////////////////////////////////////////////////////////////////////
+        stage('Test Application') {
+            steps {
+                script {
+                    FAILED_STAGE = env.STAGE_NAME
+                    echo "Stage: ${STAGE_NAME}"
+                    writeFile file: "${APP_FOLDER}/test_config.json", text: """{
+                        "address": "${SMOKE_TEST_ADDRESS}",
+                        "port": "${params.SMOKE_TEST_PORT}"
+                        }"""
+                    sh '''
+                        pwd
+                        cd ${APP_FOLDER}
+                        ls -la
+                        . /opt/venv/bin/activate
+                        cat test_config.json
+                        python3 smoke_test.py
+                    '''
+                }
+            }
+        }
+        ////////////////////////////////////////////////////////////////////////////////
+        stage('Upload to DockerHub') {
+            steps {
+                script {
+                    FAILED_STAGE = env.STAGE_NAME
+                    echo "Stage: ${STAGE_NAME}"
+                    sh '''
+                        echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+                        docker push ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${APP_IMAGE_TAG}-${APP_IMAGE_VER}
+                    '''
+                    echo "Uploading Done!"
+                    echo '''-------------------------------------------------------------------------------- 
+                      * Stratus Project Pipeline Ended! *             
 --------------------------------------------------------------------------------'''
                 }
-                sshagent(credentials: ['k8s_ssh']) {
-                   sh '''
-                   scp deployment.yml ubuntu@ip-172-31-9-10.eu-central-1.compute.internal:~
-                   ssh ubuntu@ip-172-31-9-10.eu-central-1.compute.internal kubectl apply -f deployment.yml
-                   '''
-                } 
-                              
-                echo '''-------------------------------------------------------------------------------- 
-                             * Deploy is Done as far as i know... *           
---------------------------------------------------------------------------------'''
-                
-            } }
-
-        stage('Pipeline Finished!') {
-            
-            steps { script {
-                FAILED_STAGE=env.STAGE_NAME
-                echo '''-------------------------------------------------------------------------------- 
-                      * Kubernetes Project Pipeline Ended! *             
---------------------------------------------------------------------------------'''
-				
-            } }
+            }
         }
+        ////////////////////////////////////////////////////////////////////////////////
     }
     post {
         success {
-                mail to: "brozenman@gmail.com",
-                subject: "JENKINS PIPELINE: ${currentBuild.currentResult} - ${env.JOB_NAME}",
-                body: "JOB NAME: ${env.JOB_NAME}\nPIPELINE STATUS: ${currentBuild.currentResult}\nCOMMIT ID: ${GIT_COMMIT}\n ${env.BUILD_URL} "
-                }
+            mail to: "${DEFAULT_EMAIL}",
+                 subject: "${SUBJECT}: ${currentBuild.currentResult} - ${env.JOB_NAME}",
+                 body: "${EMAIL_BODY}: ${env.JOB_NAME}\n${PSTATUS_TAG}: ${currentBuild.currentResult}\n${COMMIT_ID_TAG}: ${env.GIT_COMMIT}\n ${env.BUILD_URL} "
+        }
         failure {
-                mail to: "brozenman@gmail.com",
-                subject: "JENKINS PIPELINE: ${currentBuild.currentResult} - ${env.JOB_NAME}",
-                body: "JOB NAME: ${env.JOB_NAME}\nSTAGE FAILED NAME: $FAILED_STAGE \nPIPELINE STATUS: ${currentBuild.currentResult}\nCOMMIT ID: ${GIT_COMMIT}\n ${env.BUILD_URL} "
-                }       
+            mail to: "${DEFAULT_EMAIL}",
+                 subject: "${SUBJECT}: ${currentBuild.currentResult} - ${env.JOB_NAME}",
+                 body: "${EMAIL_BODY}: ${env.JOB_NAME}\n${FSTAGE_NAME}: $FAILED_STAGE \n${PSTATUS_TAG}: ${currentBuild.currentResult}\n${COMMIT_ID_TAG}: ${env.GIT_COMMIT}\n${env.BUILD_URL} "
+        }
     }
 }
-
