@@ -9,7 +9,7 @@
 //                                   Variables
 //===============================================================================
 def FAILED_STAGE
-
+def PORT_PATTERN = /^[0-9]+$/
 //===============================================================================
 //                                   PIPELINE
 //===============================================================================
@@ -39,10 +39,16 @@ pipeline {
                     FAILED_STAGE = env.STAGE_NAME
                     echo "Stage: ${STAGE_NAME}"
                     if (params.SMOKE_TEST_ADDRESS.isEmpty()) {
-                        error "[ERROR] SMOKE_TEST_ADDRESS is empty. Please provide a valid address."
+                        error "[ERROR] SMOKE_TEST_ADDRESS is empty. Please provide a address."
                     }
                     if (params.SMOKE_TEST_PORT.isEmpty()) {
-                        error "[ERROR] SMOKE_TEST_PORT is empty. Please provide a valid port."
+                        error "[ERROR] SMOKE_TEST_PORT is empty. Please provide a port."
+                    }
+                    try {
+                        params.SMOKE_TEST_PORT.parseInt(value)
+                        return FormValidation.ok()
+                    } catch (e) {
+                        error "[ERROR] Port ${params.SMOKE_TEST_PORT} is Invalid. Please provide a valid port."
                     }
                     echo "[INFO] Parameters validated successfully."
                 }
