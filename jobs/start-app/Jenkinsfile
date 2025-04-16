@@ -132,6 +132,7 @@ pipeline {
                         . /opt/venv/bin/activate
                         cat test_config.json
                         python3 smoke_test.py
+                        . /opt/venv/bin/deactivate
                     '''
                 }
             }
