@@ -171,7 +171,7 @@ pipeline {
         failure {
             mail to: "${DEFAULT_EMAIL}",
                  subject: "${SUBJECT}: ${currentBuild.currentResult} - ${env.JOB_NAME}",
-                 body: "${EMAIL_BODY}: ${env.JOB_NAME}\n${FSTAGE_NAME}: $FAILED_STAGE \n${PSTATUS_TAG}: ${currentBuild.currentResult}\n${COMMIT_ID_TAG}: ${env.GIT_COMMIT}\n ${env.BUILD_URL} "
+                 body: "${EMAIL_BODY}: ${env.JOB_NAME}\n${FSTAGE_NAME}: $FAILED_STAGE \n${PSTATUS_TAG}: ${currentBuild.currentResult}\n${COMMIT_ID_TAG}: ${env.GIT_COMMIT}\n${env.BUILD_URL} "
         }
     }
 }

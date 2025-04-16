@@ -25,7 +25,6 @@ class TestWebApplication(unittest.TestCase):
 
         if not os.path.exists(CONFIG_FILE):
             self.fail(f"[ERROR] Config file '{CONFIG_FILE}' not found.")
-
         with open(CONFIG_FILE, "r") as f:
             config = json.load(f)
         
