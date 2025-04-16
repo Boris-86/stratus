@@ -16,7 +16,7 @@ def FAILED_STAGE
 pipeline {
     agent { label 'docker-agent' }
     parameters {
-        string(name: 'SMOKE_TEST_ADDRESS', defaultValue: 'localhost', description: 'Target address for smoke test')
+        string(name: 'SMOKE_TEST_ADDRESS', defaultValue: 'web_app_container', description: 'Target address for smoke test, For Containers its the app container name. ')
         string(name: 'SMOKE_TEST_PORT', defaultValue: '5000', description: 'Target port for smoke test')
     }
     environment {
