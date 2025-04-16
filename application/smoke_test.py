@@ -10,18 +10,28 @@
 #===============================================================================
 import unittest
 import requests
+import json
+import os
 #===============================================================================
 #                           Constants & Variables
 #===============================================================================
 SUCCESS = 200
-adress = "localhost"
-port = "5000"
-
+CONFIG_FILE = "test_config.json"
 #===============================================================================
 #                             Classes & Functions
 #===============================================================================
 class TestWebApplication(unittest.TestCase):
     def testApp(self):      
+
+        if not os.path.exists(CONFIG_FILE):
+            self.fail(f"[ERROR] Config file '{CONFIG_FILE}' not found.")
+
+        with open(CONFIG_FILE, "r") as f:
+            config = json.load(f)
+        
+        address = config.get("address")
+        port = config.get("port")      
+        
         url = f"http://{adress}:{port}"
         http_code = None  
         try:

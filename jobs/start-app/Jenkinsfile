@@ -15,12 +15,16 @@ def FAILED_STAGE
 //===============================================================================
 pipeline {
     agent { label 'docker-agent' }
+    parameters {
+        string(name: 'SMOKE_TEST_ADDRESS', defaultValue: 'localhost', description: 'Target address for smoke test')
+        string(name: 'SMOKE_TEST_PORT', defaultValue: '5000', description: 'Target port for smoke test')
+    }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')
         APP_CONTAINER_NAME = "web_app_container"
         APP_IMAGE_TAG = "web_application_img"
         APP_IMAGE_VER = "${BUILD_NUMBER}"
-        HOST_PORT = "5000"
+        HOST_PORT = params.SMOKE_TEST_PORT
         APP_PORT = "5000"
         APP_FOLDER = "application"
         DOCKER_NETWORK = "jenkins-net"
@@ -91,12 +95,16 @@ pipeline {
                 script {
                     FAILED_STAGE = env.STAGE_NAME
                     echo "Stage: ${STAGE_NAME}"
+                    writeFile file: "${APP_FOLDER}/test_config.json", text: """{
+                        "address": "${params.SMOKE_TEST_ADDRESS}",
+                        "port": "${params.APP_PORT}"
+                        }"""
                     sh '''
                         pwd
                         cd ${APP_FOLDER}
                         ls -la
                         . /opt/venv/bin/activate
-                        python3 smoke_test.py -ad ${params.SMOKE_TEST_ADDRESS}
+                        python3 smoke_test.py
                     '''
                 }
             }
