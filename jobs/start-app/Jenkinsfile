@@ -15,19 +15,20 @@ def EMAIL_BODY = "Job Name"
 def PSTATUS_TAG = "Pipeline Status"
 def COMMIT_ID_TAG = "Commit ID"
 def FSTAGE_NAME = "Failed in Stage"
+def APP_NAME = "weather"
 //===============================================================================
 //                                   PIPELINE
 //===============================================================================
 pipeline {
     agent { label 'docker-agent' }
     parameters {
-        string(name: 'SMOKE_TEST_ADDRESS', defaultValue: 'web_app_container', description: 'Target address for smoke test, For Containers its the app container name. ')
+        string(name: 'SMOKE_TEST_ADDRESS', defaultValue: '${APP_NAME}_app_container', description: 'Target address for smoke test, For Containers its the app container name. ')
         string(name: 'SMOKE_TEST_PORT', defaultValue: '5000', description: 'Target port for smoke test')
     }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')
-        APP_CONTAINER_NAME = "web_app_container"
-        APP_IMAGE_TAG = "web_application_img"
+        APP_CONTAINER_NAME = "${APP_NAME}_app_container"
+        APP_IMAGE_TAG = "${APP_NAME}_app_img"
         APP_IMAGE_VER = "${BUILD_NUMBER}"
         HOST_PORT = "${params.SMOKE_TEST_PORT}"
         APP_PORT = "5000"
@@ -59,7 +60,7 @@ pipeline {
             }
         }
         
-        stage('Remove Old Web Application Docker Container...') {
+        stage('Remove Old Application Docker Container...') {
             steps {
                 script {
                     FAILED_STAGE = env.STAGE_NAME
@@ -81,7 +82,7 @@ pipeline {
             }
         }
         ////////////////////////////////////////////////////////////////////////////////
-        stage('Build New Web Application Docker Image') {
+        stage('Build New Application Docker Image') {
             steps {
                 script {
                     FAILED_STAGE = env.STAGE_NAME
@@ -98,7 +99,7 @@ pipeline {
             }
         }
         ////////////////////////////////////////////////////////////////////////////////
-        stage('Deploy Web Application') {
+        stage('Deploy Application') {
             steps {
                 script {
                     FAILED_STAGE = env.STAGE_NAME
@@ -116,7 +117,7 @@ pipeline {
             }
         }
         ////////////////////////////////////////////////////////////////////////////////
-        stage('Test Web Application') {
+        stage('Test Application') {
             steps {
                 script {
                     FAILED_STAGE = env.STAGE_NAME
@@ -132,7 +133,6 @@ pipeline {
                         . /opt/venv/bin/activate
                         cat test_config.json
                         python3 smoke_test.py
-                        . /opt/venv/bin/deactivate
                     '''
                 }
             }
