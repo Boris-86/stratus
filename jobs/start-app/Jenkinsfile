@@ -65,7 +65,7 @@ pipeline {
             }
         }
         
-        stage('Remove Old Application Docker Container...') {
+        stage('Remove Old Application Docker Container') {
             steps {
                 script {
                     FAILED_STAGE = env.STAGE_NAME
@@ -153,20 +153,13 @@ pipeline {
                         docker push ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${APP_IMAGE_TAG}-${APP_IMAGE_VER}
                     '''
                     echo "Uploading Done!"
-                }
-            }
-        }
-        ////////////////////////////////////////////////////////////////////////////////
-        stage('Pipeline Finished!') {
-            steps {
-                script {
-                    FAILED_STAGE = env.STAGE_NAME
                     echo '''-------------------------------------------------------------------------------- 
                       * Stratus Project Pipeline Ended! *             
 --------------------------------------------------------------------------------'''
                 }
             }
         }
+        ////////////////////////////////////////////////////////////////////////////////
     }
     post {
         success {
