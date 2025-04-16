@@ -1,0 +1,39 @@
+services:
+  jenkins-master:
+    image: 310179635/stratus:jenkins-master-backup
+    container_name: jenkins-master
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      # Use local backup folder as Jenkins home
+      - ./jenkins_home_backup:/var/jenkins_home
+    networks:
+      - jenkins-net
+
+  jenkins-agent:
+    image: 310179635/stratus:jenkins-agent-backup
+    container_name: jenkins-agent
+    restart: unless-stopped
+    depends_on:
+      - jenkins-master
+    environment:
+      - JENKINS_URL=http://jenkins-master:8080
+      - JENKINS_AGENT_WORKDIR=/home/jenkins/agent
+    volumes:
+      - jenkins_agent:/home/jenkins/agent
+      - jenkins_agent_config:/home/jenkins/.jenkins
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - jenkins-net
+
+volumes:
+  jenkins_agent:
+    external: false
+  jenkins_agent_config:
+    external: false
+
+networks:
+  jenkins-net:
+    driver: bridge
