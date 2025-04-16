@@ -1,13 +1,13 @@
 import unittest
 import requests
 
-address = "web_app_container"
-port = "5000"
 SUCCESS = 200
+adress = "localhost"
+port = "5000"
 
 class TestWebApplication(unittest.TestCase):
-    def testApp(self):
-        url = f"http://{address}:{port}"
+    def testApp(self):      
+        url = f"http://{adress}:{port}"
         http_code = None  # Use None to clearly distinguish from 0
 
         try:
