@@ -28,11 +28,10 @@ class TestWebApplication(unittest.TestCase):
             self.fail(f"[ERROR] Config file '{CONFIG_FILE}' not found.")
         with open(CONFIG_FILE, "r") as f:
             config = json.load(f)
-        
         address = config.get("address")
-        port = config.get("port")      
+        port = config.get("port")
         print(address)
-	print(port)
+        print(port)
         url = f"http://{address}:{port}"
         http_code = None  
         try:
