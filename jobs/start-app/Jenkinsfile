@@ -128,13 +128,19 @@ pipeline {
                 script {
                     FAILED_STAGE = env.STAGE_NAME
                     echo "Stage: ${STAGE_NAME}"
+                    // Start ngrok in background and detach cleanly
                     sh '''
                         ngrok config add-authtoken ${NGROK_TOKEN}
-                        nohup ngrok http http://web_app_container:${DOCKER_PORT} > /tmp/ngrok.log 2>&1 &
-                        sleep 5
-                        NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | grep -o 'https://[a-zA-Z0-9.-]*.ngrok-free.app')
-                        echo "[NGROK] Public URL: $NGROK_URL"
+                        nohup ngrok http ${APP_CONTAINER_NAME}:${DOCKER_PORT} > /tmp/ngrok.log 2>&1 &
                     '''
+                    // Wait and fetch tunnel
+                    sleep 6 // wait for ngrok to spin up
+                    def url = sh(
+                        script: "curl -s http://localhost:4040/api/tunnels | grep -o 'https://[a-zA-Z0-9.-]*.ngrok-free.app' || true",
+                        returnStdout: true
+                    ).trim()
+
+                    echo "[NGROK] Public URL: ${url}"
                 }
             }
         }
