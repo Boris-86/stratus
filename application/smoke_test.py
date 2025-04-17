@@ -30,13 +30,12 @@ class TestWebApplication(unittest.TestCase):
             config = json.load(f)
         address = config.get("address")
         port = config.get("port")
-		  print(address)
-        print(port)
         url = f"http://{address}:{port}"
-        http_code = None  
+        http_code = None
+        print(f"Testing URL: {url}")  
         try:
-				time.sleep(5)
-				response = requests.get(url)
+            time.sleep(5)
+            response = requests.get(url)
             http_code = response.status_code
             print(f"Smoke Test: Web application at {url} is reachable [O.K].")
             print(f"[INFO] HTTP status code: {http_code}")
