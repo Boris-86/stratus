@@ -97,7 +97,7 @@ pipeline {
                         cd ${APP_FOLDER}
                         ls -la
                         docker images
-                        docker build . -t ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${APP_IMAGE_TAG}-${APP_IMAGE_VER}
+                        docker build --build-arg PORT=${DOCKER_PORT} . -t ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${APP_IMAGE_TAG}-${APP_IMAGE_VER}
                         docker images
                     '''
                 }
