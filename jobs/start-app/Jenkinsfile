@@ -37,6 +37,7 @@ pipeline {
         DOCKER_NETWORK = "jenkins-net"
         DOCKERHUB_USER = "310179635"
         DOCKERHUB_REPO = "stratus"
+        NGROK_PORT = '4040'
     }
     ////////////////////////////////////////////////////////////////////////////////
     stages {
@@ -136,7 +137,7 @@ pipeline {
                         --name ngrok \
                         --network ${DOCKER_NETWORK} \
                         -e NGROK_AUTHTOKEN=${NGROK_TOKEN} \
-                        -p 4040:4040 \
+                        -p ${NGROK_PORT}:${NGROK_PORT} \
                         ngrok/ngrok http ${APP_CONTAINER_NAME}:${DOCKER_PORT}
                         sleep 5
                         docker ps
