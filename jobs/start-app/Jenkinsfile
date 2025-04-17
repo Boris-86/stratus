@@ -22,7 +22,7 @@ pipeline {
     agent { label 'docker-agent' }
     parameters {
         string(name: 'APPLICATION_NAME', defaultValue: 'web', description: 'Web Application name: ')
-        string(name: 'SMOKE_TEST_PORT', defaultValue: '5000', description: 'Target port for smoke test, e.g. 8080, 5000 etc.')
+        string(name: 'SMOKE_TEST_PORT', defaultValue: '5000', description: 'Target port for smoke test, between 1000 and 9000.')
     }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')

@@ -13,7 +13,7 @@ RUN pip3 install -r requirements.txt
 
 # copy every content from the local file to the image
 COPY . .
-EXPOSE 5000
+EXPOSE 1000-9000
 # configure the container to run in an executed manner
 
 CMD ["gunicorn", "-b", "0.0.0.0:5000", "wsgi:app" ]
