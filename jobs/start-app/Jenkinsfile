@@ -128,30 +128,18 @@ pipeline {
                 script {
                     FAILED_STAGE = env.STAGE_NAME
                     echo "Stage: ${STAGE_NAME}"
-                    // Start ngrok in background and detach cleanly
-
                     sh '''
-                        bash
+                        docker pull ngrok/ngrok
+                        docker images
                         ngrok config add-authtoken ${NGROK_TOKEN}
-                        containerIp=$(docker inspect -f \'{{.NetworkSettings.Networks."jenkins-net".IPAddress}}\' web_app_container)
-                        echo "Web app container IP is: $containerIp"
-                        nohup ngrok http ${containerIp}:${DOCKER_PORT} > /tmp/ngrok.log 2>&1 & echo $! > /tmp/ngrok.pid
-
-                        for i in {1..10}; do
-                        curl -s http://localhost:4040/api/tunnels && break
-                        echo "[INFO] Waiting for ngrok to be ready..."
-                        sleep 1
-                        done
-
-                        echo "[INFO] Ngrok process started with PID: $NGROK_PID"
-                        echo "[INFO] Ngrok logs:"
-                        tail -n 10 /tmp/ngrok.log
-
-                        echo "[INFO] Extracting public URL from ngrok API..."
-                        curl -s http://localhost:4040/api/tunnels | grep -o 'https://[a-zA-Z0-9.-]*.ngrok-free.app' | head -n 1 > /tmp/ngrok_url.txt
-
-                        echo "[INFO] NGROK URL saved to /tmp/ngrok_url.txt:"
-                        cat /tmp/ngrok_url.txt
+                        docker run -d \
+                        --name ngrok \
+                        --network ${DOCKER_NETWORK} \
+                        -e NGROK_AUTHTOKEN=${NGROK_TOKEN} \
+                        ngrok/ngrok http ${APP_CONTAINER_NAME}:${DOCKER_PORT}
+                        sleep 5
+                        docker ps
+                        sh 'docker logs --tail 30 ngrok'
                     '''
                 }
             }
