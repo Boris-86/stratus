@@ -20,4 +20,6 @@ COPY . .
 EXPOSE ${PORT}
 
 # configure the container to run in an executed manner
-CMD ["gunicorn", "-b", "0.0.0.0:${PORT}", "wsgi:app" ]
+#CMD ["gunicorn", "-b", "0.0.0.0:${PORT}", "wsgi:app" ]
+CMD gunicorn -b 0.0.0.0:${PORT} wsgi:app
+
