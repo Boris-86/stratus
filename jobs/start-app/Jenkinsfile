@@ -15,7 +15,6 @@ def EMAIL_BODY = "Job Name"
 def PSTATUS_TAG = "Pipeline Status"
 def COMMIT_ID_TAG = "Commit ID"
 def FSTAGE_NAME = "Failed in Stage"
-def NGROK_ENDPOINT
 //===============================================================================
 //                                   PIPELINE
 //===============================================================================
@@ -38,7 +37,6 @@ pipeline {
         DOCKER_NETWORK = "jenkins-net"
         DOCKERHUB_USER = "310179635"
         DOCKERHUB_REPO = "stratus"
-        ENDPOINT = "localhost"
     }
     ////////////////////////////////////////////////////////////////////////////////
     stages {
@@ -132,13 +130,11 @@ pipeline {
                     echo "Stage: ${STAGE_NAME}"
                     sh '''
                         ngrok config add-authtoken ${NGROK_TOKEN}
-                        ngrok http ${DOCKER_PORT} > ngrok.log &
+                        nohup ngrok http ${DOCKER_PORT} > /tmp/ngrok.log 2>&1 &
                         sleep 5
                         NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | grep -o 'https://[a-zA-Z0-9.-]*.ngrok-free.app')
                         echo "[NGROK] Public URL: $NGROK_URL"
-                        ENDPOINT=${NGROK}
                     '''
-                    NGROK_ENDPOINT = env.ENDPOINT
                 }
             }
         }
@@ -186,7 +182,7 @@ pipeline {
         success {
             mail to: "${DEFAULT_EMAIL}",
                  subject: "${SUBJECT}: ${currentBuild.currentResult} - ${env.JOB_NAME}",
-                 body: "${EMAIL_BODY}: ${env.JOB_NAME}\n${PSTATUS_TAG}: ${currentBuild.currentResult}\n${COMMIT_ID_TAG}: ${env.GIT_COMMIT}\n ${env.ENDPOINT} "
+                 body: "${EMAIL_BODY}: ${env.JOB_NAME}\n${PSTATUS_TAG}: ${currentBuild.currentResult}\n${COMMIT_ID_TAG}: ${env.GIT_COMMIT}\n ${env.BUILD_URL} "
         }
         failure {
             mail to: "${DEFAULT_EMAIL}",
