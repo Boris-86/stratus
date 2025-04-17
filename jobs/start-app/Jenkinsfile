@@ -132,7 +132,7 @@ pipeline {
                     
                     sh '''
                         ngrok config add-authtoken ${NGROK_TOKEN}
-                        nohup ngrok http web_app_container:${DOCKER_PORT} > /tmp/ngrok.log 2>&1 &
+                        nohup ngrok http ${APP_CONTAINER_NAME}:${DOCKER_PORT} > /tmp/ngrok.log 2>&1 &
                         NGROK_PID=$!
 
                         for i in {1..10}; do
