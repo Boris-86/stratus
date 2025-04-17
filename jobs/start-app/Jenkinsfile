@@ -136,6 +136,7 @@ pipeline {
                         --name ngrok \
                         --network ${DOCKER_NETWORK} \
                         -e NGROK_AUTHTOKEN=${NGROK_TOKEN} \
+                        -p 4040:4040 \
                         ngrok/ngrok http ${APP_CONTAINER_NAME}:${DOCKER_PORT}
                         sleep 5
                         docker ps
