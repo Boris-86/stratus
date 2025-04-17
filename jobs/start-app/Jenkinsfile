@@ -27,6 +27,7 @@ pipeline {
     }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')
+        NGROK_TOKEN = credentials('NGrok')
         APP_CONTAINER_NAME = "${params.APPLICATION_NAME}_app_container"
         APP_IMAGE_TAG = "${params.APPLICATION_NAME}_app_img"
         APP_IMAGE_VER = "${BUILD_NUMBER}"
@@ -130,10 +131,9 @@ pipeline {
                     FAILED_STAGE = env.STAGE_NAME
                     echo "Stage: ${STAGE_NAME}"
                     sh '''
-                        # Start ngrok in background and expose the app port
+                        ngrok config add-authtoken ${NGROK_TOKEN}
                         ngrok http ${DOCKER_PORT} > ngrok.log &
                         sleep 5
-                        # Extract the public URL from ngrok API
                         NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | grep -o 'https://[a-zA-Z0-9.-]*.ngrok-free.app')
                         echo "[NGROK] Public URL: $NGROK_URL"
                         ENDPOINT=${NGROK}
