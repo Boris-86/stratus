@@ -1,46 +1,75 @@
+#===============================================================================
+# Boris Rozenman (c). 
+# 
+# Python Web Application Pipeline
+# Deploy on local environment simulating a whole CI/CD
+#===============================================================================
+
+#===============================================================================
+#                                 Libraries
+#===============================================================================
 from requests import get
-import json
 from datetime import datetime
 import random
-
-
-def seven_days_forecast(city):
+# import json
+#===============================================================================
+#                            Constants & Variables
+#===============================================================================
+API_KEY = 'VHGVWTTHTARHVPJLESFA9CYAV'
+SUCCESS_CODE = 200
+FANTASY_LANDS = ['Mars', 'Omicron Persei 8', 'the Moon']
+UNIT_GROUP = 'metric'
+CONTENT_TYPE = 'json'
+BASE_URL = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline"
+FORECAST_DAYS = 7
+RESPONSE_ELEMENTS = ['datetime', 'tempmax', 'tempmin', 'temp', 'humidity']
+PARAMS = {
+    'unitGroup': UNIT_GROUP,
+    'elements': ','.join(RESPONSE_ELEMENTS),
+    'key': API_KEY,
+    'contentType': CONTENT_TYPE
+}
+#===============================================================================
+#                             Classes & Functions
+#===============================================================================
+def seven_days_forecast(city: str) -> dict:
     """
-    A function that gets the weather forecast for the next 7 days for the requested city.
-    :param city: the city to get the forecast for.
-    :return: a list for 7 days with the following attr for each day: date, max temp, min temp, avg temp, humidity.
+    Fetches a 7-day weather forecast for the specified city using the Visual Crossing API.
+    Args:
+        city (str): Name of the city to fetch forecast for.
+    Returns:
+        dict: A dictionary containing status, resolved address, current conditions,
+              and a list of weather data for each of the next 7 days.
     """
-
+    # Ensure a comma is added if there's no space (for cities like 'London, UK')
     if ' ' not in city:
         city += ','
-
-    baseurl = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/' + \
-              city + \
-              '/next7days?'
-    params = {'unitGroup': 'metric',
-              'elements': 'datetime,tempmax,tempmin,temp,humidity',
-              'key': 'VHGVWTTHTARHVPJLESFA9CYAV',
-              'contentType': 'json'}
-
-    data = get(baseurl, params)
-    status = data.status_code
-    fantasy_lands = ['on Mars', 'on Omicron Persei 8', 'on the Moon']
-    if status != 200:
-        return {'status': status,
-                'message': f"Sorry, We do not support cities {random.choice(fantasy_lands)}. Yet"}
-    content = json.loads(data.content)
+    url = f"{BASE_URL}/{city}/next{FORECAST_DAYS}days"
+    response = get(url, params=PARAMS)
+    if response.status_code != SUCCESS_CODE:
+        return {
+            'status': response.status_code,
+            'message': f"Sorry, we do not support cities on {random.choice(FANTASY_LANDS)}. Yet."
+        }
+    content = response.json()    
     res_addr = content['resolvedAddress']
     curr_cond = content['currentConditions']
-    days_list = [{attr: day[attr]
-                  for attr in ['datetime', 'temp', 'tempmin', 'tempmax', 'humidity']}
-                 for day in content['days']]
+    days_list = [{attribute: day[attribute]
+                  for attribute in ['datetime', 'temp', 'tempmin', 'tempmax', 'humidity']}
+                  for day in content['days']]
     for day in days_list:
         day['weekday'] = datetime.strptime(day['datetime'], '%Y-%m-%d').strftime('%A')
         day['datetime'] = "/".join(day['datetime'].split("-")[::-1])
-    fdict = {'status': status, 'res_addr': res_addr, 'curr_cond': curr_cond, 'days': days_list}
+    
+    forecast_dict = {'status': response.status_code, 'res_addr': res_addr, 'curr_cond': curr_cond, 'days': days_list}
 
-    return fdict
+    return forecast_dict
 
-
+#===============================================================================
+#                                    MAIN
+#===============================================================================
 if __name__ == "__main__":
     print(seven_days_forecast('haifa'))
+#===============================================================================
+#                                 END OF FILE
+#===============================================================================

@@ -22,13 +22,14 @@ pipeline {
     agent { label 'docker-agent' }
     parameters {
         string(name: 'APPLICATION_NAME', defaultValue: 'web', description: 'Web Application name: ')
-        string(name: 'SMOKE_TEST_PORT', defaultValue: '5000', description: 'Target port for smoke test, between 1000 and 9000.')
+        string(name: 'SMOKE_TEST_PORT', defaultValue: '5000', description: 'Target port for smoke test, e.g. 5000 or 2000 etc.')
     }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')
+        NGROK_TOKEN = credentials('NGrok')
         APP_CONTAINER_NAME = "${params.APPLICATION_NAME}_app_container"
         APP_IMAGE_TAG = "${params.APPLICATION_NAME}_app_img"
-        APP_IMAGE_VER = "${BUILD_NUMBER}"
+        APP_IMAGE_VER = "${JOB_NAME}_${BUILD_NUMBER}"
         SMOKE_TEST_ADDRESS = "${APP_CONTAINER_NAME}"
         HOST_PORT = "${params.SMOKE_TEST_PORT}"
         DOCKER_PORT = "${params.SMOKE_TEST_PORT}"
@@ -36,6 +37,7 @@ pipeline {
         DOCKER_NETWORK = "jenkins-net"
         DOCKERHUB_USER = "310179635"
         DOCKERHUB_REPO = "stratus"
+        NGROK_PORT = '4040'
     }
     ////////////////////////////////////////////////////////////////////////////////
     stages {
@@ -78,6 +80,7 @@ pipeline {
                         docker ps -a
                         echo "[INFO] Removing old ${APP_CONTAINER_NAME} if exists..."
                         docker ps -a --format '{{.Names}}' | grep -w ${APP_CONTAINER_NAME} && docker rm -f ${APP_CONTAINER_NAME} || echo "Container not found."
+                        docker ps -a --format '{{.Names}}' | grep -w ngrok && docker rm -f ngrok || echo "Container not found."
                         echo "[INFO] Cleaning up unused resources..."
                         docker system prune -f || true
                         echo "[INFO] Remaining containers:"
@@ -118,6 +121,33 @@ pipeline {
                           ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${APP_IMAGE_TAG}-${APP_IMAGE_VER}
                         docker ps
                     '''
+                }
+            }
+        }
+        ////////////////////////////////////////////////////////////////////////////////
+        stage('Expose Application with Ngrok') {
+            steps {
+                script {
+                    FAILED_STAGE = env.STAGE_NAME
+                    echo "Stage: ${STAGE_NAME}"
+                    sh '''
+                        docker pull ngrok/ngrok
+                        docker images
+                        docker run -d \
+                        --name ngrok \
+                        --network ${DOCKER_NETWORK} \
+                        -e NGROK_AUTHTOKEN=${NGROK_TOKEN} \
+                        -p ${NGROK_PORT}:${NGROK_PORT} \
+                        ngrok/ngrok http ${APP_CONTAINER_NAME}:${DOCKER_PORT}
+                        sleep 5
+                        docker ps
+                        echo "[INFO] Getting public ngrok URL..."
+                        curl -s http://host.docker.internal:4040/api/tunnels \
+                        | grep -o '"public_url":"https://[^"]*' \
+                        | cut -d'"' -f4 > ngrok_url.txt
+                    '''
+                    env.NGROK_PUBLIC_URL = readFile('ngrok_url.txt').trim()
+                    echo "[INFO] NGROK_PUBLIC_URL = ${env.NGROK_PUBLIC_URL}"
                 }
             }
         }
@@ -165,7 +195,7 @@ pipeline {
         success {
             mail to: "${DEFAULT_EMAIL}",
                  subject: "${SUBJECT}: ${currentBuild.currentResult} - ${env.JOB_NAME}",
-                 body: "${EMAIL_BODY}: ${env.JOB_NAME}\n${PSTATUS_TAG}: ${currentBuild.currentResult}\n${COMMIT_ID_TAG}: ${env.GIT_COMMIT}\n ${env.BUILD_URL} "
+                 body: "${EMAIL_BODY}: ${env.JOB_NAME}\n${PSTATUS_TAG}: ${currentBuild.currentResult}\n${COMMIT_ID_TAG}: ${env.GIT_COMMIT}\n${env.NGROK_PUBLIC_URL} "
         }
         failure {
             mail to: "${DEFAULT_EMAIL}",
