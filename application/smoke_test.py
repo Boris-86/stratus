@@ -12,6 +12,7 @@ import unittest
 import requests
 import json
 import os
+import time
 #===============================================================================
 #                           Constants & Variables
 #===============================================================================
@@ -27,13 +28,13 @@ class TestWebApplication(unittest.TestCase):
             self.fail(f"[ERROR] Config file '{CONFIG_FILE}' not found.")
         with open(CONFIG_FILE, "r") as f:
             config = json.load(f)
-        
         address = config.get("address")
-        port = config.get("port")      
-        
+        port = config.get("port")
         url = f"http://{address}:{port}"
-        http_code = None  
+        http_code = None
+        print(f"Testing URL: {url}")  
         try:
+            time.sleep(5)
             response = requests.get(url)
             http_code = response.status_code
             print(f"Smoke Test: Web application at {url} is reachable [O.K].")

@@ -22,7 +22,7 @@ pipeline {
     agent { label 'docker-agent' }
     parameters {
         string(name: 'APPLICATION_NAME', defaultValue: 'web', description: 'Web Application name: ')
-        string(name: 'SMOKE_TEST_PORT', defaultValue: '5000', description: 'Target port for smoke test, e.g. 8080, 5000 etc.')
+        string(name: 'SMOKE_TEST_PORT', defaultValue: '5000', description: 'Target port for smoke test, between 1000 and 9000.')
     }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')
@@ -31,7 +31,7 @@ pipeline {
         APP_IMAGE_VER = "${BUILD_NUMBER}"
         SMOKE_TEST_ADDRESS = "${APP_CONTAINER_NAME}"
         HOST_PORT = "${params.SMOKE_TEST_PORT}"
-        DOCKER_PORT = "5000"
+        DOCKER_PORT = "${params.SMOKE_TEST_PORT}"
         APP_FOLDER = "application"
         DOCKER_NETWORK = "jenkins-net"
         DOCKERHUB_USER = "310179635"
@@ -97,7 +97,7 @@ pipeline {
                         cd ${APP_FOLDER}
                         ls -la
                         docker images
-                        docker build . -t ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${APP_IMAGE_TAG}-${APP_IMAGE_VER}
+                        docker build --build-arg PORT=${DOCKER_PORT} . -t ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${APP_IMAGE_TAG}-${APP_IMAGE_VER}
                         docker images
                     '''
                 }
