@@ -29,7 +29,7 @@ pipeline {
         NGROK_TOKEN = credentials('NGrok')
         APP_CONTAINER_NAME = "${params.APPLICATION_NAME}_app_container"
         APP_IMAGE_TAG = "${params.APPLICATION_NAME}_app_img"
-        APP_IMAGE_VER = "${BUILD_NUMBER}"
+        APP_IMAGE_VER = "${JOB_NAME}_${BUILD_NUMBER}"
         SMOKE_TEST_ADDRESS = "${APP_CONTAINER_NAME}"
         HOST_PORT = "${params.SMOKE_TEST_PORT}"
         DOCKER_PORT = "${params.SMOKE_TEST_PORT}"
@@ -144,8 +144,10 @@ pipeline {
                         echo "[INFO] Getting public ngrok URL..."
                         curl -s http://host.docker.internal:4040/api/tunnels \
                         | grep -o '"public_url":"https://[^"]*' \
-                        | cut -d'"' -f4
+                        | cut -d'"' -f4 > ngrok_url.txt
                     '''
+                    env.NGROK_PUBLIC_URL = readFile('ngrok_url.txt').trim()
+                    echo "[INFO] NGROK_PUBLIC_URL = ${env.NGROK_PUBLIC_URL}"
                 }
             }
         }
@@ -193,7 +195,7 @@ pipeline {
         success {
             mail to: "${DEFAULT_EMAIL}",
                  subject: "${SUBJECT}: ${currentBuild.currentResult} - ${env.JOB_NAME}",
-                 body: "${EMAIL_BODY}: ${env.JOB_NAME}\n${PSTATUS_TAG}: ${currentBuild.currentResult}\n${COMMIT_ID_TAG}: ${env.GIT_COMMIT}\n ${env.BUILD_URL} "
+                 body: "${EMAIL_BODY}: ${env.JOB_NAME}\n${PSTATUS_TAG}: ${currentBuild.currentResult}\n${COMMIT_ID_TAG}: ${env.GIT_COMMIT}\n ${env.NGROK_PUBLIC_URL} "
         }
         failure {
             mail to: "${DEFAULT_EMAIL}",
