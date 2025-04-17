@@ -11,7 +11,6 @@
 from requests import get
 from datetime import datetime
 import random
-# import json
 #===============================================================================
 #                            Constants & Variables
 #===============================================================================
@@ -54,12 +53,23 @@ def seven_days_forecast(city: str) -> dict:
     content = response.json()    
     res_addr = content['resolvedAddress']
     curr_cond = content['currentConditions']
-    days_list = [{attribute: day[attribute]
-                  for attribute in ['datetime', 'temp', 'tempmin', 'tempmax', 'humidity']}
-                  for day in content['days']]
-    for day in days_list:
-        day['weekday'] = datetime.strptime(day['datetime'], '%Y-%m-%d').strftime('%A')
-        day['datetime'] = "/".join(day['datetime'].split("-")[::-1])
+    # days_list = [{attribute: day[attribute]
+    #               for attribute in ['datetime', 'temp', 'tempmin', 'tempmax', 'humidity']}
+    #               for day in content['days']]
+    # for day in days_list:
+    #     day['weekday'] = datetime.strptime(day['datetime'], '%Y-%m-%d').strftime('%A')
+    #     day['datetime'] = "/".join(day['datetime'].split("-")[::-1])
+    days_list = []
+    for day in content['days']:
+        day_info = {
+            'datetime': "/".join(day['datetime'].split("-")[::-1]),
+            'temp': day['temp'],
+            'tempmin': day['tempmin'],
+            'tempmax': day['tempmax'],
+            'humidity': day['humidity'],
+            'weekday': datetime.strptime(day['datetime'], '%Y-%m-%d').strftime('%A')
+        }
+        days_list.append(day_info)
     
     forecast_dict = {'status': response.status_code, 'res_addr': res_addr, 'curr_cond': curr_cond, 'days': days_list}
 
