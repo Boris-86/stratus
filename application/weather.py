@@ -11,7 +11,7 @@
 from requests import get
 from datetime import datetime
 import random
-import json
+# import json
 #===============================================================================
 #                            Constants & Variables
 #===============================================================================
@@ -51,14 +51,7 @@ def seven_days_forecast(city: str) -> dict:
             'status': response.status_code,
             'message': f"Sorry, we do not support cities on {random.choice(FANTASY_LANDS)}. Yet."
         }
-    # data = get(baseurl, params)
-    # status = data.status_code
-    # if status != SUCCESS_CODE:
-    #     return {'status': status,
-    #             'message': f"Sorry, We do not support cities {random.choice(FANTASY_LANDS)}. Yet"}
-    content = response.json()
-    # content = json.loads(data.content)
-    
+    content = response.json()    
     res_addr = content['resolvedAddress']
     curr_cond = content['currentConditions']
     days_list = [{attribute: day[attribute]
@@ -67,9 +60,10 @@ def seven_days_forecast(city: str) -> dict:
     for day in days_list:
         day['weekday'] = datetime.strptime(day['datetime'], '%Y-%m-%d').strftime('%A')
         day['datetime'] = "/".join(day['datetime'].split("-")[::-1])
-    fdict = {'status': response.status_code, 'res_addr': res_addr, 'curr_cond': curr_cond, 'days': days_list}
+    
+    forecast_dict = {'status': response.status_code, 'res_addr': res_addr, 'curr_cond': curr_cond, 'days': days_list}
 
-    return fdict
+    return forecast_dict
 
 #===============================================================================
 #                                    MAIN

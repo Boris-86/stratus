@@ -2,9 +2,11 @@
 FROM python:3.8-alpine
 
 # Default port is 1000, but can be changed during build
+ARG END_POINT=0.0.0.0
 ARG PORT=5000
 
 ENV PORT=${PORT}
+ENV END_POINT=${END_POINT}
 
 # copy the requirements file into the image
 COPY ./requirements.txt ./requirements.txt
@@ -23,5 +25,5 @@ EXPOSE ${PORT}
 
 # configure the container to run in an executed manner
 #CMD ["gunicorn", "-b", "0.0.0.0:${PORT}", "wsgi:app" ]
-CMD gunicorn -b 0.0.0.0:${PORT} wsgi:app
+CMD gunicorn -b ${END_POINT}:${PORT} wsgi:app
 

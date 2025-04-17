@@ -22,7 +22,8 @@ pipeline {
     agent { label 'docker-agent' }
     parameters {
         string(name: 'APPLICATION_NAME', defaultValue: 'web', description: 'Web Application name: ')
-        string(name: 'SMOKE_TEST_PORT', defaultValue: '5000', description: 'Target port for smoke test, between 1000 and 9000.')
+        string(name: 'APPLICATION_ENDPOINT', defaultValue: '0.0.0.0', description: 'Web Application EndPoint: ')
+        string(name: 'SMOKE_TEST_PORT', defaultValue: '5000', description: 'Target port for smoke test, e.g. 5000 or 2000 etc.')
     }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')
@@ -36,6 +37,7 @@ pipeline {
         DOCKER_NETWORK = "jenkins-net"
         DOCKERHUB_USER = "310179635"
         DOCKERHUB_REPO = "stratus"
+        APP_ENDPOINT = "${APPLICATION_ENDPOINT}"
     }
     ////////////////////////////////////////////////////////////////////////////////
     stages {
@@ -97,7 +99,7 @@ pipeline {
                         cd ${APP_FOLDER}
                         ls -la
                         docker images
-                        docker build --build-arg PORT=${DOCKER_PORT} . -t ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${APP_IMAGE_TAG}-${APP_IMAGE_VER}
+                        docker build --build-arg PORT=${DOCKER_PORT} END_POINT=${APP_ENDPOINT} . -t ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${APP_IMAGE_TAG}-${APP_IMAGE_VER}
                         docker images
                     '''
                 }
