@@ -129,13 +129,11 @@ pipeline {
                     FAILED_STAGE = env.STAGE_NAME
                     echo "Stage: ${STAGE_NAME}"
                     // Start ngrok in background and detach cleanly
-                    def containerIp = sh(
-                    script: "docker inspect -f '{{.NetworkSettings.Networks.\"jenkins-net\".IPAddress}}' ${APP_CONTAINER_NAME}",
-                    returnStdout: true
-                    ).trim()
+
                     sh '''
                         ngrok config add-authtoken ${NGROK_TOKEN}
-                        
+                        containerIp=$(docker inspect -f \'{{.NetworkSettings.Networks."jenkins-net".IPAddress}}\' web_app_container)
+                        echo "Web app container IP is: $containerIp"
                         nohup ngrok http ${containerIp}:${DOCKER_PORT} > /tmp/ngrok.log 2>&1 & echo $! > /tmp/ngrok.pid
 
                         for i in {1..10}; do
