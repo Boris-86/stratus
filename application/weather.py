@@ -71,8 +71,13 @@ def seven_days_forecast(city: str) -> dict:
         }
         days_list.append(day_info)
     
-    forecast_dict = {'status': response.status_code, 'res_addr': res_addr, 'curr_cond': curr_cond, 'days': days_list}
-
+    # forecast_dict = {'status': response.status_code, 'res_addr': res_addr, 'curr_cond': curr_cond, 'days': days_list}
+    forecast_dict = {
+        'status': response.status_code,
+        'res_addr': res_addr,
+        'curr_cond': curr_cond,
+        'days': days_list
+    }
     return forecast_dict
 
 #===============================================================================
