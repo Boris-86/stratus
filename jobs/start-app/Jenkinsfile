@@ -130,7 +130,7 @@ pipeline {
                     echo "Stage: ${STAGE_NAME}"
                     sh '''
                         ngrok config add-authtoken ${NGROK_TOKEN}
-                        nohup ngrok http ${APP_CONTAINER_NAME}:${DOCKER_PORT} > /tmp/ngrok.log 2>&1 &
+                        nohup ngrok http http://web_app_container:${DOCKER_PORT} > /tmp/ngrok.log 2>&1 &
                         sleep 5
                         NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | grep -o 'https://[a-zA-Z0-9.-]*.ngrok-free.app')
                         echo "[NGROK] Public URL: $NGROK_URL"
