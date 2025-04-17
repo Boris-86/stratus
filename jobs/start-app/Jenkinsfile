@@ -131,7 +131,7 @@ pipeline {
                     // Start ngrok in background and detach cleanly
                     sh '''
                         ngrok config add-authtoken ${NGROK_TOKEN}
-                        nohup ngrok http ${APP_CONTAINER_NAME}:${DOCKER_PORT} > /tmp/ngrok.log 2>&1 &
+                        nohup ngrok http localhost:${DOCKER_PORT} > /tmp/ngrok.log 2>&1 &
                     '''
                     // Wait and fetch tunnel
                     sleep 6 // wait for ngrok to spin up
