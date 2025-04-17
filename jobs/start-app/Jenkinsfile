@@ -141,7 +141,9 @@ pipeline {
                         sleep 5
                         docker ps
                         echo "[INFO] Getting public ngrok URL..."
-                        curl -s http://host.docker.internal:4040/api/tunnels
+                        curl -s http://host.docker.internal:4040/api/tunnels \
+                        | grep -o '"public_url":"https://[^"]*' \
+                        | cut -d'"' -f4
                     '''
                 }
             }
