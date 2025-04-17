@@ -15,6 +15,7 @@ def EMAIL_BODY = "Job Name"
 def PSTATUS_TAG = "Pipeline Status"
 def COMMIT_ID_TAG = "Commit ID"
 def FSTAGE_NAME = "Failed in Stage"
+def NGROK_ENDPOINT
 //===============================================================================
 //                                   PIPELINE
 //===============================================================================
@@ -36,6 +37,7 @@ pipeline {
         DOCKER_NETWORK = "jenkins-net"
         DOCKERHUB_USER = "310179635"
         DOCKERHUB_REPO = "stratus"
+        ENDPOINT = "localhost"
     }
     ////////////////////////////////////////////////////////////////////////////////
     stages {
@@ -122,6 +124,25 @@ pipeline {
             }
         }
         ////////////////////////////////////////////////////////////////////////////////
+        stage('Expose Application with Ngrok') {
+            steps {
+                script {
+                    FAILED_STAGE = env.STAGE_NAME
+                    echo "Stage: ${STAGE_NAME}"
+                    sh '''
+                        # Start ngrok in background and expose the app port
+                        ngrok http ${DOCKER_PORT} > ngrok.log &
+                        sleep 5
+                        # Extract the public URL from ngrok API
+                        NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | grep -o 'https://[a-zA-Z0-9.-]*.ngrok-free.app')
+                        echo "[NGROK] Public URL: $NGROK_URL"
+                        ENDPOINT=${NGROK}
+                    '''
+                    NGROK_ENDPOINT = env.ENDPOINT
+                }
+            }
+        }
+        ////////////////////////////////////////////////////////////////////////////////
         stage('Test Application') {
             steps {
                 script {
@@ -165,7 +186,7 @@ pipeline {
         success {
             mail to: "${DEFAULT_EMAIL}",
                  subject: "${SUBJECT}: ${currentBuild.currentResult} - ${env.JOB_NAME}",
-                 body: "${EMAIL_BODY}: ${env.JOB_NAME}\n${PSTATUS_TAG}: ${currentBuild.currentResult}\n${COMMIT_ID_TAG}: ${env.GIT_COMMIT}\n ${env.BUILD_URL} "
+                 body: "${EMAIL_BODY}: ${env.JOB_NAME}\n${PSTATUS_TAG}: ${currentBuild.currentResult}\n${COMMIT_ID_TAG}: ${env.GIT_COMMIT}\n ${env.ENDPOINT} "
         }
         failure {
             mail to: "${DEFAULT_EMAIL}",
