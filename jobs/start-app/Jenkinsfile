@@ -131,6 +131,7 @@ pipeline {
                     // Start ngrok in background and detach cleanly
 
                     sh '''
+                        bash
                         ngrok config add-authtoken ${NGROK_TOKEN}
                         containerIp=$(docker inspect -f \'{{.NetworkSettings.Networks."jenkins-net".IPAddress}}\' web_app_container)
                         echo "Web app container IP is: $containerIp"
