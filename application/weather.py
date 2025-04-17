@@ -17,14 +17,22 @@ import json
 #===============================================================================
 API_KEY = 'VHGVWTTHTARHVPJLESFA9CYAV'
 SUCCESS_CODE = 200
-FANTASY_LANDS = ['on Mars', 'on Omicron Persei 8', 'on the Moon']
+FANTASY_LANDS = ['Mars', 'Omicron Persei 8', 'the Moon']
 UNIT_GROUP = 'metric'
 CONTENT_TYPE = 'json'
-ELEMENTS = 'datetime,tempmax,tempmin,temp,humidity'
+BASE_URL = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline"
+FORECAST_DAYS = 7
+RESPONSE_ELEMENTS = ['datetime', 'tempmax', 'tempmin', 'temp', 'humidity']
+PARAMS = {
+    'unitGroup': UNIT_GROUP,
+    'elements': ','.join(RESPONSE_ELEMENTS),
+    'key': API_KEY,
+    'contentType': CONTENT_TYPE
+}
 #===============================================================================
 #                             Classes & Functions
 #===============================================================================
-def seven_days_forecast(city):
+def seven_days_forecast(city: str) -> dict:
     """
     Fetches a 7-day weather forecast for the specified city using the Visual Crossing API.
     Args:
@@ -36,27 +44,30 @@ def seven_days_forecast(city):
     # Ensure a comma is added if there's no space (for cities like 'London, UK')
     if ' ' not in city:
         city += ','
-    baseurl = f"https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{city}/next7days"
-    params = {'unitGroup': UNIT_GROUP,
-              'elements': ELEMENTS,
-              'key': API_KEY,
-              'contentType': CONTENT_TYPE }
-
-    data = get(baseurl, params)
-    status = data.status_code
-    if status != SUCCESS_CODE:
-        return {'status': status,
-                'message': f"Sorry, We do not support cities {random.choice(FANTASY_LANDS)}. Yet"}
-    content = json.loads(data.content)
+    url = f"{BASE_URL}/{city}/next{FORECAST_DAYS}days"
+    response = get(url, params=PARAMS)
+    if response.status_code != SUCCESS_CODE:
+        return {
+            'status': response.status_code,
+            'message': f"Sorry, we do not support cities on {random.choice(FANTASY_LANDS)}. Yet."
+        }
+    # data = get(baseurl, params)
+    # status = data.status_code
+    # if status != SUCCESS_CODE:
+    #     return {'status': status,
+    #             'message': f"Sorry, We do not support cities {random.choice(FANTASY_LANDS)}. Yet"}
+    content = response.json()
+    # content = json.loads(data.content)
+    
     res_addr = content['resolvedAddress']
     curr_cond = content['currentConditions']
-    days_list = [{attr: day[attr]
-                  for attr in ['datetime', 'temp', 'tempmin', 'tempmax', 'humidity']}
-                 for day in content['days']]
+    days_list = [{attribute: day[attribute]
+                  for attribute in ['datetime', 'temp', 'tempmin', 'tempmax', 'humidity']}
+                  for day in content['days']]
     for day in days_list:
         day['weekday'] = datetime.strptime(day['datetime'], '%Y-%m-%d').strftime('%A')
         day['datetime'] = "/".join(day['datetime'].split("-")[::-1])
-    fdict = {'status': status, 'res_addr': res_addr, 'curr_cond': curr_cond, 'days': days_list}
+    fdict = {'status': response.status_code, 'res_addr': res_addr, 'curr_cond': curr_cond, 'days': days_list}
 
     return fdict
 
