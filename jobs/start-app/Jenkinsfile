@@ -130,8 +130,8 @@ pipeline {
                     echo "Stage: ${STAGE_NAME}"
                     // Start ngrok in background and detach cleanly
                     def containerIp = sh(
-                        script: "docker inspect -f '{{.NetworkSettings.Networks.jenkins-net.IPAddress}}' ${APP_CONTAINER_NAME}",
-                        returnStdout: true
+                    script: "docker inspect -f '{{.NetworkSettings.Networks.\"jenkins-net\".IPAddress}}' ${APP_CONTAINER_NAME}",
+                    returnStdout: true
                     ).trim()
                     sh '''
                         ngrok config add-authtoken ${NGROK_TOKEN}
