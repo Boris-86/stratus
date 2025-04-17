@@ -131,7 +131,6 @@ pipeline {
                     sh '''
                         docker pull ngrok/ngrok
                         docker images
-                        ngrok config add-authtoken ${NGROK_TOKEN}
                         docker run -d \
                         --name ngrok \
                         --network ${DOCKER_NETWORK} \
