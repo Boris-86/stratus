@@ -31,7 +31,7 @@ pipeline {
         APP_IMAGE_VER = "${BUILD_NUMBER}"
         SMOKE_TEST_ADDRESS = "${APP_CONTAINER_NAME}"
         HOST_PORT = "${params.SMOKE_TEST_PORT}"
-        DOCKER_PORT = "5000"
+        DOCKER_PORT = "${params.SMOKE_TEST_PORT}"
         APP_FOLDER = "application"
         DOCKER_NETWORK = "jenkins-net"
         DOCKERHUB_USER = "310179635"
