@@ -140,6 +140,8 @@ pipeline {
                         ngrok/ngrok http ${APP_CONTAINER_NAME}:${DOCKER_PORT}
                         sleep 5
                         docker ps
+                        echo "[INFO] Getting public ngrok URL..."
+                        curl -s http://localhost:4040/api/tunnels | grep -o 'https://[a-zA-Z0-9.-]*.ngrok-free.app' | head -n 1
                     '''
                 }
             }
