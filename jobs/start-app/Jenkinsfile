@@ -138,7 +138,6 @@ pipeline {
                         ngrok/ngrok http ${APP_CONTAINER_NAME}:${DOCKER_PORT}
                         sleep 5
                         docker ps
-                        sh 'docker logs --tail 30 ngrok'
                     '''
                 }
             }
