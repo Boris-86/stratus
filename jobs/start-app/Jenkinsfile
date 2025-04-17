@@ -79,6 +79,7 @@ pipeline {
                         docker ps -a
                         echo "[INFO] Removing old ${APP_CONTAINER_NAME} if exists..."
                         docker ps -a --format '{{.Names}}' | grep -w ${APP_CONTAINER_NAME} && docker rm -f ${APP_CONTAINER_NAME} || echo "Container not found."
+                        docker ps -a --format '{{.Names}}' | grep -w ngrok && docker rm -f ngrok || echo "Container not found."
                         echo "[INFO] Cleaning up unused resources..."
                         docker system prune -f || true
                         echo "[INFO] Remaining containers:"
